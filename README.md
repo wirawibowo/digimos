@@ -1,151 +1,234 @@
-# Digimos
+<div align="center">
 
-A mosque (masjid) information display system built with SvelteKit and SQLite.
+<img src="static/favicon.png" alt="Digimos Logo" width="80" />
 
-Digimos shows prayer times, adzan/iqamah countdowns, running text announcements, and
-supports multiple visual themes — designed to run fullscreen on a TV or set-top box.
+# 🕌 Digimos
 
-## Features
+**Sistem Informasi Display Masjid — Berbasis Web, Gratis, Open Source**
 
-- Multi-mosque support from a single server
-- Six visual display themes
-- Prayer time integration via [MyQuran API](https://api.myquran.com) and [AlAdhan API](https://aladhan.com/prayer-times-api)
-- Automatic adzan overlay and iqamah countdown
-- Configurable running text announcements
-- Wallpaper upload and gallery management
-- YouTube streaming mode as display background
-- Admin panel with session-based authentication
-- User management (superadmin and per-mosque admin roles)
+[![SvelteKit](https://img.shields.io/badge/SvelteKit-2.x-FF3E00?style=for-the-badge&logo=svelte&logoColor=white)](https://kit.svelte.dev)
+[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
-## Tech Stack
+> Tampilkan jadwal sholat, countdown adzan & iqamah, teks berjalan, dan streaming YouTube —  
+> langsung di TV atau layar masjid Anda. Gratis selamanya.
 
-| Layer | Technology |
+</div>
+
+---
+
+## ✨ Fitur Utama
+
+| Fitur | Keterangan |
 |-------|-----------|
-| Framework | SvelteKit 2 (adapter-node) |
-| Runtime | Node.js 20+ |
-| Database | SQLite via better-sqlite3 |
-| ORM | Drizzle ORM |
-| Auth | Cookie sessions + bcryptjs |
-| Styling | Plain CSS |
+| 🕐 **Jadwal Sholat Otomatis** | Sinkronisasi dari MyQuran API & AlAdhan API |
+| 📺 **6 Tema Tampilan** | Pilih tema yang sesuai estetika masjid |
+| 🔔 **Adzan & Iqamah Countdown** | Overlay otomatis saat waktu sholat tiba |
+| 📢 **Running Text** | Pengumuman berjalan yang bisa dikonfigurasi |
+| 🖼️ **Manajemen Wallpaper** | Upload & pilih gambar latar tampilan |
+| 📡 **Mode YouTube** | Putar streaming YouTube sebagai latar belakang |
+| 🏘️ **Multi-Masjid** | Satu server untuk banyak masjid |
+| 🔐 **Panel Admin** | Login aman dengan manajemen pengguna |
 
-## Getting Started
+---
 
-### Prerequisites
+## 🖥️ Tampilan
 
-- Node.js 20 or later
-- npm
+> Buka URL display di browser TV atau set-top box — tanpa login.
 
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/your-github-org/digimos.git
-cd digimos
-
-# Install dependencies
-npm install
-
-# Configure environment
-cp .env.example .env
-# Edit .env and set your values (especially SEED_PASSWORD)
+```
+http://alamat-server/display/{masjidId}
 ```
 
-### Database Setup
+Contoh: `http://192.168.1.10:3000/display/1`
+
+---
+
+## 🚀 Memulai
+
+### Prasyarat
+
+- **Node.js** versi 20 atau lebih baru
+- **npm**
+
+### Instalasi
 
 ```bash
-# Push schema to create the SQLite database
+# 1. Clone repositori
+git clone https://github.com/wirawibowo/digimos.git
+cd digimos
+
+# 2. Install dependensi
+npm install
+
+# 3. Konfigurasi environment
+cp .env.example .env
+```
+
+Edit file `.env`:
+
+```env
+DATABASE_PATH=./database.db
+SEED_PASSWORD=password_admin_anda
+NODE_ENV=development
+```
+
+### Setup Database
+
+```bash
+# Buat skema database SQLite
 npm run db:push
 
-# Seed initial data (creates superadmin user and a sample mosque)
-# Requires SEED_PASSWORD to be set in .env
+# Isi data awal (superadmin + contoh masjid)
 npm run db:seed
 ```
 
-### Development
+Setelah seed selesai, login dengan:
+- **Username:** `admin`
+- **Password:** nilai `SEED_PASSWORD` yang Anda set
+- **Contoh masjid:** Masjid Al-Fahrudin (bisa diubah di panel admin)
+
+### Jalankan Mode Development
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Buka [http://localhost:5173](http://localhost:5173) di browser.
 
-Log in with username `admin` and the password you set in `SEED_PASSWORD`.
+---
 
-### Production Build
+## 📦 Build Produksi
 
 ```bash
+# Build aplikasi
 npm run build
 
-# Start the production server
+# Jalankan server produksi
 node build/index.js
 ```
 
-The server listens on port `3000` by default. Configure a reverse proxy (nginx, Caddy)
-in front of it for HTTPS and domain routing.
+Server berjalan di port `3000` secara default.  
+Gunakan reverse proxy seperti **nginx** atau **Caddy** untuk HTTPS.
 
-## Display URL
+---
 
-Each mosque has a dedicated fullscreen display page:
-
-```
-http://your-server/display/{masjidId}
-```
-
-Open this URL on the TV or set-top box browser. No login is required for the display page.
-
-## Environment Variables
-
-See `.env.example` for all supported variables.
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `NODE_ENV` | `development` | Set to `production` in production |
-| `DATABASE_PATH` | `./database.db` | Path to the SQLite database file |
-| `SEED_PASSWORD` | — | Password for the initial superadmin user (seeding only) |
-
-## Project Structure
+## 🗂️ Struktur Proyek
 
 ```
 src/
-  routes/
-    (app)/          # Admin panel (login required)
-      dashboard/
-      admin/[masjidId]/
-      masjid/
-      settings/[masjidId]/
-      jadwal/[masjidId]/
-      iqamah/[masjidId]/
-      users/
-    (auth)/
-      login/
-    display/[masjidId]/  # Fullscreen TV display (public)
-    api/
-      auth/
-      jadwal/
-      jadwal/sync/
-  lib/
-    server/
-      db.ts          # Drizzle + SQLite connection
-      schema.ts      # Database schema
-      auth.ts        # Session management
-      prayer-api.ts  # Prayer time API integration
-      seed.ts        # Database seeder
-    components/
-      themes/        # Display theme components (Theme1-Theme6)
+├── routes/
+│   ├── (app)/                    # Panel Admin (perlu login)
+│   │   ├── dashboard/
+│   │   ├── admin/[masjidId]/
+│   │   ├── settings/[masjidId]/
+│   │   ├── jadwal/[masjidId]/
+│   │   ├── iqamah/[masjidId]/
+│   │   └── users/
+│   ├── (auth)/login/             # Halaman login
+│   ├── display/[masjidId]/       # Tampilan TV (publik)
+│   └── api/                      # REST API endpoints
+└── lib/
+    ├── server/
+    │   ├── db.ts                 # Koneksi Drizzle + SQLite
+    │   ├── schema.ts             # Skema database
+    │   ├── auth.ts               # Manajemen sesi
+    │   └── prayer-api.ts         # Integrasi API jadwal sholat
+    └── components/
+        └── themes/               # Komponen tema tampilan (Theme1–Theme6)
 static/
-  uploads/           # User-uploaded wallpapers (gitignored at runtime)
+└── uploads/                      # Wallpaper yang diupload pengguna
 ```
 
-## Prayer Time APIs
+---
 
-Two providers are supported per mosque:
+## 🌐 API Jadwal Sholat
 
-- **MyQuran** (default) — uses Indonesian Kemenag calculation via `cityApiId`
-- **AlAdhan** — uses city name + country; supports multiple calculation methods
+Digimos mendukung dua penyedia jadwal sholat, bisa dipilih per masjid:
 
-The app fetches and caches a full month of schedules in the local database on first
-access, then serves from cache.
+| Penyedia | Keunggulan |
+|----------|-----------|
+| **MyQuran** *(default)* | Data Kemenag RI, cocok untuk Indonesia |
+| **AlAdhan** | Mendukung berbagai metode perhitungan global |
 
-## License
+Jadwal di-cache lokal di database setiap bulan — tidak perlu internet setelah sinkronisasi.
 
-MIT
+---
+
+## ⚙️ Environment Variables
+
+| Variabel | Default | Keterangan |
+|----------|---------|-----------|
+| `NODE_ENV` | `development` | Set ke `production` di server |
+| `DATABASE_PATH` | `./database.db` | Lokasi file database SQLite |
+| `SEED_PASSWORD` | *(wajib diisi)* | Password superadmin saat seeding |
+
+---
+
+## 🏗️ Tech Stack
+
+| Layer | Teknologi |
+|-------|----------|
+| Framework | SvelteKit 2 (adapter-node) |
+| Runtime | Node.js 20+ |
+| Database | SQLite via better-sqlite3 |
+| ORM | Drizzle ORM |
+| Autentikasi | Cookie session + bcryptjs |
+| Styling | Plain CSS |
+
+---
+
+## 📱 Versi SPA (Tanpa Server)
+
+Untuk yang ingin tampilan masjid **tanpa perlu server Node.js**, tersedia versi SPA di folder [`SPA/`](./SPA).
+
+| Fitur | Digimos (Full) | Digimos SPA |
+|-------|---------------|-------------|
+| Jadwal Sholat | ✅ | ✅ |
+| Countdown Adzan | ✅ | ✅ |
+| Running Text | ✅ | ✅ |
+| Admin Panel | ✅ | ❌ |
+| Multi-Masjid | ✅ | ❌ |
+| Upload Wallpaper | ✅ | ❌ |
+| Butuh Server | ✅ Node.js | ❌ Static hosting |
+
+**Cara pakai SPA:**
+
+```bash
+cd SPA
+npm install
+npm run dev       # development
+npm run build     # build ke /build — deploy ke GitHub Pages / Netlify / Cloudflare Pages
+```
+
+---
+
+## 🤝 Berkontribusi
+
+Kontribusi sangat disambut! Silakan buka [issue](../../issues) atau kirim Pull Request.
+
+1. Fork repositori ini
+2. Buat branch fitur: `git checkout -b fitur/nama-fitur`
+3. Commit perubahan: `git commit -m 'feat: tambah fitur X'`
+4. Push ke branch: `git push origin fitur/nama-fitur`
+5. Buka Pull Request
+
+Lihat [CONTRIBUTING.md](CONTRIBUTING.md) untuk panduan lebih lengkap.
+
+---
+
+## 📄 Lisensi
+
+Proyek ini dilisensikan di bawah [MIT License](LICENSE).  
+Bebas digunakan, dimodifikasi, dan didistribusikan — termasuk untuk penggunaan komersial.
+
+---
+
+<div align="center">
+
+Dibuat dengan ❤️ untuk masjid-masjid di seluruh Indonesia
+
+**⭐ Jika proyek ini membantu, beri bintang di GitHub!**
+
+</div>
