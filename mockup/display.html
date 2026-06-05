@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<title>Digimos — Display Masjid</title>
+<meta name="viewport" content="width=1920, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-900:#06122e;
+    --navy-800:#0a1f4d;
+    --navy-700:#0e2d72;
+    --navy-600:#1545a8;
+    --navy-500:#2563d4;
+    --gold-600:#a37a2a;
+    --gold-500:#c89a45;
+    --gold-400:#e3b864;
+    --gold-300:#f0cd86;
+    --gold-200:#f7e1a8;
+    --cream:#fff6df;
+    --yellow:#ffd93d;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{
+    width:100%; height:100%;
+    background:#000;
+    color:#fff;
+    font-family:'Plus Jakarta Sans','Inter',system-ui,sans-serif;
+    overflow:hidden;
+  }
+  .stage{
+    position:fixed; inset:0;
+    background:#000;
+    overflow:hidden;
+  }
+  .canvas{
+    position:absolute; inset:0;
+    width:100vw; height:100vh;
+    overflow:hidden;
+  }
+
+  /* mosque photo as full background */
+  .bg-photo{
+    position:absolute; inset:0;
+    background:url('assets/masjid-bg.png') center 30%/cover;
+    z-index:0;
+  }
+  .bg-photo::after{
+    content:""; position:absolute; inset:0;
+    background:
+      linear-gradient(90deg, rgba(8,25,66,.92) 0%, rgba(8,25,66,.55) 28%, transparent 45%, transparent 65%, rgba(6,18,46,.5) 100%),
+      linear-gradient(180deg, rgba(6,18,46,.45) 0%, transparent 25%, transparent 75%, rgba(6,18,46,.7) 100%);
+  }
+
+  /* ============ LEFT SIDEBAR ============ */
+  .sidebar{
+    position:absolute;
+    left:0; top:0; bottom:0;
+    width:30vw;
+    padding:2.5vh 1.6vw 7vh 1.4vw;
+    display:flex; flex-direction:column;
+    justify-content:space-between;
+    z-index:3;
+    background:linear-gradient(180deg, rgba(8,18,46,.7) 0%, rgba(8,18,46,.5) 60%, rgba(8,18,46,0) 100%);
+  }
+  .prayer{
+    display:grid;
+    grid-template-columns:5vw 1fr;
+    align-items:center;
+    gap:1.4vw;
+  }
+  .prayer .icon{
+    width:5vw; height:5vw;
+    max-width:88px; max-height:88px;
+    display:grid; place-items:center;
+    color:var(--gold-400);
+  }
+  .prayer .icon svg{width:100%; height:100%; filter:drop-shadow(0 2px 6px rgba(0,0,0,.5));}
+  .prayer .body{ min-width:0;}
+  .prayer .name{
+    font-weight:700;
+    font-size:clamp(20px, 2vw, 42px);
+    line-height:1;
+    color:#fff;
+    text-shadow:0 2px 8px rgba(0,0,0,.5);
+  }
+  .prayer .time{
+    font-family:'Inter',sans-serif;
+    font-weight:800;
+    font-size:clamp(42px, 4.4vw, 90px);
+    line-height:1;
+    margin-top:.6vh;
+    color:var(--gold-300);
+    letter-spacing:-1.5px;
+    text-shadow:0 2px 12px rgba(0,0,0,.5);
+    font-variant-numeric:tabular-nums;
+  }
+  .prayer .iq{
+    font-size:clamp(11px,.9vw,18px);
+    color:rgba(255,255,255,.78);
+    letter-spacing:1.6px;
+    font-weight:600;
+    margin-top:.4vh;
+  }
+  .prayer.active .name,
+  .prayer.active .time{ color:var(--yellow); text-shadow:0 0 22px rgba(255,217,61,.6); }
+  .prayer.active .icon{ color:var(--yellow); }
+
+  /* ============ RIGHT HEADER ============ */
+  .header{
+    position:absolute;
+    right:1.4vw; top:2vh;
+    z-index:4;
+    display:flex; align-items:center; gap:1.2vw;
+    text-align:right;
+  }
+  .header .text{ line-height:1;}
+  .header .name{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:800;
+    font-size:clamp(28px,3vw,60px);
+    letter-spacing:-1px;
+    text-shadow:0 2px 12px rgba(0,0,0,.6);
+  }
+  .header .accent{ color:var(--gold-300); }
+  .header .addr{
+    margin-top:.8vh;
+    font-size:clamp(11px,.95vw,18px);
+    color:rgba(255,255,255,.85);
+    letter-spacing:.3px;
+    font-weight:500;
+  }
+  .logo{
+    width:clamp(56px,5vw,100px);
+    height:clamp(56px,5vw,100px);
+    border-radius:14px;
+    background:linear-gradient(135deg,#c89a45,#f0cd86 50%,#a37a2a);
+    border:2px solid rgba(255,235,180,.65);
+    display:grid; place-items:center;
+    box-shadow:0 8px 24px rgba(0,0,0,.45);
+    flex:none;
+  }
+  .logo svg{width:60%; height:60%; color:#0a1f4d;}
+
+  /* ============ ANALOG CLOCK (center-left) ============ */
+  .clock-area{
+    position:absolute;
+    left:24vw; top:50%;
+    transform:translateY(-50%);
+    z-index:5;
+  }
+  .clock{
+    width:clamp(280px, 26vw, 520px);
+    aspect-ratio:1/1;
+    background:
+      radial-gradient(circle at 50% 50%, #0a0e1c 0%, #050913 70%, #02060f 100%);
+    border-radius:50%;
+    border:5px solid rgba(243,205,134,.4);
+    box-shadow:
+      0 30px 80px rgba(0,0,0,.6),
+      0 0 0 12px rgba(8,18,46,.5),
+      inset 0 0 0 1px rgba(243,205,134,.18);
+    position:relative;
+  }
+  .clock svg{ width:100%; height:100%; position:relative; z-index:1;}
+  .clock-brand{
+    position:absolute;
+    left:50%; top:62%;
+    transform:translate(-50%,0);
+    text-align:center;
+    color:rgba(255,255,255,.7);
+    pointer-events:none;
+    z-index:0;
+  }
+  .clock-brand .b{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:800;
+    font-size:clamp(13px,1.2vw,22px);
+    letter-spacing:3px;
+  }
+  .clock-brand .v{
+    font-size:clamp(8px,.7vw,12px);
+    letter-spacing:1.5px;
+    color:rgba(255,255,255,.45);
+    font-weight:600;
+    margin-top:2px;
+  }
+
+  /* ============ DATE STRIP ============ */
+  .date-strip{
+    position:absolute;
+    left:24vw; bottom:9.5vh;
+    z-index:4;
+    display:flex; align-items:center; gap:.8vw;
+    color:#fff;
+    font-size:clamp(14px,1.3vw,26px);
+    font-weight:600;
+    text-shadow:0 2px 10px rgba(0,0,0,.6);
+  }
+  .date-strip .dot{
+    width:.7vw; height:.7vw;
+    max-width:14px; max-height:14px;
+    border-radius:50%;
+    background:var(--gold-300);
+    box-shadow:0 0 12px var(--gold-300);
+  }
+  .date-strip .lbl{ color:var(--gold-300); font-weight:700;}
+  .date-strip .sep{ opacity:.5; padding:0 .3vw;}
+
+  /* ============ COUNTDOWN BOTTOM RIGHT ============ */
+  .countdown{
+    position:absolute;
+    right:1.4vw; bottom:9.5vh;
+    z-index:4;
+    background:linear-gradient(180deg,#ffffff,#e9eefb);
+    color:#0a1f4d;
+    padding:1vh 1.4vw;
+    border-radius:999px;
+    display:flex; align-items:center; gap:.8vw;
+    box-shadow:0 12px 32px rgba(0,0,0,.5), inset 0 1px 0 #fff;
+    border:1.5px solid rgba(243,205,134,.7);
+  }
+  .countdown svg{
+    width:clamp(20px,1.8vw,36px); height:clamp(20px,1.8vw,36px);
+    color:var(--navy-600);
+  }
+  .countdown .lbl{
+    font-weight:700;
+    font-size:clamp(16px,1.5vw,30px);
+  }
+  .countdown .val{
+    font-family:'Inter',sans-serif;
+    font-weight:800;
+    font-size:clamp(20px,1.9vw,38px);
+    color:#0a3d8f;
+    letter-spacing:-.5px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ============ MARQUEE ============ */
+  .marquee{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:6vh;
+    background:linear-gradient(180deg,#0a1f4d, #06122e);
+    border-top:2px solid rgba(243,205,134,.55);
+    display:flex; align-items:center;
+    overflow:hidden;
+    z-index:6;
+  }
+  .marquee::before, .marquee::after{
+    content:""; position:absolute; top:0; bottom:0; width:60px; z-index:2; pointer-events:none;
+  }
+  .marquee::before{ left:0; background:linear-gradient(90deg,#06122e, transparent); }
+  .marquee::after{ right:0; background:linear-gradient(270deg,#06122e, transparent); }
+  .marquee .track{
+    display:flex;
+    white-space:nowrap;
+    animation:scroll 60s linear infinite;
+    will-change:transform;
+  }
+  .marquee .item{
+    font-size:clamp(15px,1.4vw,28px);
+    font-weight:500;
+    color:var(--gold-300);
+    padding:0 3vw;
+    letter-spacing:.4px;
+    display:flex; align-items:center; gap:1.8vw;
+  }
+  .marquee .item::before{
+    content:"◆"; color:var(--gold-400); font-size:.7em;
+  }
+  @keyframes scroll{
+    from{ transform:translateX(0); }
+    to  { transform:translateX(-50%); }
+  }
+
+  /* ============ ADZAN / IQAMAH OVERLAYS ============ */
+  .overlay{
+    position:absolute; inset:0;
+    z-index:100;
+    background:radial-gradient(120% 90% at 50% 30%, #0e2974 0%, #06122e 65%, #03091f 100%);
+    display:none;
+    align-items:center; justify-content:center;
+    flex-direction:column;
+    text-align:center;
+    overflow:hidden;
+  }
+  .overlay.show{ display:flex; }
+  .overlay::before{
+    content:""; position:absolute; inset:0;
+    background:url('assets/masjid-bg.png') center/cover;
+    opacity:.18; filter:blur(2px) saturate(1.1);
+  }
+  .overlay-inner{ position:relative; z-index:2; padding:40px;}
+  .overlay .label{
+    font-size:clamp(20px,2.2vw,44px); letter-spacing:8px; color:var(--gold-300); font-weight:600;
+  }
+  .overlay .arabic{
+    font-family:'Amiri',serif;
+    font-size:clamp(60px,8vw,160px);
+    line-height:1.2;
+    margin:2vh 0 1vh;
+    color:#fff;
+    text-shadow:0 4px 30px rgba(0,0,0,.7);
+  }
+  .overlay .prayer-name{
+    font-size:clamp(70px,9vw,180px);
+    font-weight:800;
+    letter-spacing:-2px;
+    background:linear-gradient(180deg,#fff,var(--gold-200) 60%,var(--gold-400));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .overlay .place{
+    margin-top:2vh; font-size:clamp(20px,2vw,40px); color:rgba(255,255,255,.85);
+  }
+  .overlay .clock-big{
+    margin-top:3vh;
+    font-family:'Inter',sans-serif;
+    font-weight:800;
+    font-size:clamp(70px,8vw,160px);
+    color:#fff;
+    font-variant-numeric:tabular-nums;
+    letter-spacing:-4px;
+  }
+  .overlay .pulse{
+    margin-top:2vh;
+    display:inline-flex; align-items:center; gap:14px;
+    padding:1.4vh 2.4vw;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(243,205,134,.4);
+    border-radius:999px;
+    color:#fff; font-size:clamp(15px,1.5vw,28px);
+    backdrop-filter:blur(6px);
+  }
+  .pulse-dot{
+    width:14px; height:14px; border-radius:50%; background:var(--gold-300);
+    animation:pulse 1.6s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(243,205,134,.6);}
+    70%{box-shadow:0 0 0 26px rgba(243,205,134,0);}
+    100%{box-shadow:0 0 0 0 rgba(243,205,134,0);}
+  }
+  .overlay.iqamah .label{ color:#7bff9c; }
+  .overlay.iqamah .countdown-huge{
+    font-family:'Inter',sans-serif;
+    font-size:clamp(180px,22vw,480px);
+    font-weight:900;
+    line-height:1;
+    color:#fff;
+    letter-spacing:-12px;
+    font-variant-numeric:tabular-nums;
+    text-shadow:0 10px 60px rgba(0,0,0,.6);
+    margin-top:2vh;
+  }
+  .overlay.iqamah .countdown-huge .sep{ color:var(--gold-300); }
+  .overlay.iqamah .sub{
+    margin-top:3vh; font-size:clamp(22px,2.4vw,46px); color:rgba(255,255,255,.85); font-weight:500;
+  }
+
+  /* dev modes panel */
+  .modes{
+    position:fixed; bottom:14px; right:14px; z-index:200;
+    display:flex; gap:8px;
+    background:rgba(0,0,0,.65); padding:8px;
+    border-radius:12px; border:1px solid rgba(255,255,255,.15);
+    backdrop-filter:blur(8px);
+  }
+  .modes button{
+    background:linear-gradient(180deg,#1545a8,#0a3d8f);
+    color:#fff; border:1px solid rgba(243,205,134,.3);
+    padding:8px 14px; font-size:13px; font-weight:600;
+    border-radius:8px; cursor:pointer; font-family:inherit;
+  }
+  .modes button.active{ background:linear-gradient(180deg,var(--gold-400),var(--gold-600)); color:#0a1f4d; }
+  .modes a{
+    background:rgba(255,255,255,.08); color:#fff;
+    border:1px solid rgba(255,255,255,.15);
+    padding:8px 14px; font-size:13px; font-weight:600;
+    border-radius:8px; text-decoration:none; font-family:inherit;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="canvas">
+
+    <!-- mosque photo background -->
+    <div class="bg-photo"></div>
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+      <div class="prayer" data-prayer="shubuh">
+        <div class="icon">
+          <!-- sunrise icon -->
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="32" cy="40" r="11"/>
+            <path d="M8 51h48M14 40l-5 4M50 40l5 4M32 24v-6M21 28l-3-3M43 28l3-3"/>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="name">Shubuh</div>
+          <div class="time" data-key="shubuh">04:38</div>
+          <div class="iq">IQAMAH <span data-key="shubuh_iq">04:48</span></div>
+        </div>
+      </div>
+
+      <div class="prayer" data-prayer="syuruq">
+        <div class="icon">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="32" cy="32" r="10"/>
+            <path d="M32 10v8M32 46v8M10 32h8M46 32h8M16 16l5 5M43 43l5 5M16 48l5-5M43 21l5-5"/>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="name">Syuruq</div>
+          <div class="time" data-key="syuruq">05:53</div>
+          <div class="iq"><span data-key="syuruq_range">05:53 - 06:08</span></div>
+        </div>
+      </div>
+
+      <div class="prayer" data-prayer="dzuhur">
+        <div class="icon">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="32" cy="32" r="12"/>
+            <path d="M32 4v8M32 52v8M4 32h8M52 32h8M11 11l6 6M47 47l6 6M11 53l6-6M47 17l6-6"/>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="name">Jumat</div>
+          <div class="time" data-key="dzuhur">12:10</div>
+          <div class="iq">IQAMAH <span data-key="dzuhur_iq">12:20</span></div>
+        </div>
+      </div>
+
+      <div class="prayer active" data-prayer="ashar">
+        <div class="icon">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="32" cy="32" r="9"/>
+            <path d="M8 38h48M14 30l-5 1M50 30l5 1M32 18v-6"/>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="name">Ashar</div>
+          <div class="time" data-key="ashar">15:27</div>
+          <div class="iq">IQAMAH <span data-key="ashar_iq">15:37</span></div>
+        </div>
+      </div>
+
+      <div class="prayer" data-prayer="maghrib">
+        <div class="icon">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="32" cy="40" r="10"/>
+            <path d="M5 50h54M3 40h6M55 40h6M32 22v-4"/>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="name">Maghrib</div>
+          <div class="time" data-key="maghrib">18:21</div>
+          <div class="iq">IQAMAH <span data-key="maghrib_iq">18:31</span></div>
+        </div>
+      </div>
+
+      <div class="prayer" data-prayer="isya">
+        <div class="icon">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M52 38a20 20 0 1 1-26-26 16.5 16.5 0 0 0 26 26Z"/>
+          </svg>
+        </div>
+        <div class="body">
+          <div class="name">Isya</div>
+          <div class="time" data-key="isya">19:32</div>
+          <div class="iq">IQAMAH <span data-key="isya_iq">19:42</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- HEADER -->
+    <header class="header">
+      <div class="text">
+        <div class="name"><span class="accent">Masjid</span> Nurul Himmah</div>
+        <div class="addr">Kp. Duren Seribu, Duren Seribu, Bojongsari, Depok &nbsp;·&nbsp; Telp. 0251-8064544</div>
+      </div>
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.4 0 .8.2 1 .6l1.2 2c.2.4.2.8 0 1.2L12.8 8.4c-.1.2-.2.4-.2.6V11h3.3a3 3 0 0 1 3 3v7H5V14a3 3 0 0 1 3-3h3.3V9a1 1 0 0 0-.2-.6L9.8 5.8a1 1 0 0 1 0-1.2l1.2-2c.2-.4.6-.6 1-.6Z"/></svg>
+      </div>
+    </header>
+
+    <!-- ANALOG CLOCK -->
+    <div class="clock-area">
+      <div class="clock">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- hour markers (numbers 1-12) -->
+          <g font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#ffffff" text-anchor="middle" dominant-baseline="central">
+            <text x="100" y="22">12</text>
+            <text x="138" y="32" fill="#f0cd86">1</text>
+            <text x="166" y="60">2</text>
+            <text x="178" y="100" fill="#f0cd86">3</text>
+            <text x="166" y="140">4</text>
+            <text x="138" y="168" fill="#f0cd86">5</text>
+            <text x="100" y="178">6</text>
+            <text x="62" y="168" fill="#f0cd86">7</text>
+            <text x="34" y="140">8</text>
+            <text x="22" y="100" fill="#f0cd86">9</text>
+            <text x="34" y="60">10</text>
+            <text x="62" y="32" fill="#f0cd86">11</text>
+          </g>
+          <!-- minute tick marks -->
+          <g stroke="rgba(255,255,255,.25)" stroke-width="1">
+            <g id="ticks"></g>
+          </g>
+          <!-- hour hand -->
+          <line id="h-hour" x1="100" y1="100" x2="100" y2="62" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>
+          <!-- minute hand -->
+          <line id="h-min" x1="100" y1="100" x2="100" y2="35" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round"/>
+          <!-- second hand -->
+          <line id="h-sec" x1="100" y1="105" x2="100" y2="30" stroke="#f0cd86" stroke-width="1.4" stroke-linecap="round"/>
+          <!-- center cap -->
+          <circle cx="100" cy="100" r="4" fill="#f0cd86" stroke="#0a1f4d" stroke-width="1.5"/>
+        </svg>
+        <div class="clock-brand">
+          <div class="b">MASJID</div>
+          <div class="v">VERSION 2.0.1</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATE STRIP -->
+    <div class="date-strip">
+      <span class="dot"></span>
+      <span class="lbl" id="dayName">Jumat</span>
+      <span id="dateMasehi">6 Feb 2026</span>
+      <span class="sep">/</span>
+      <span id="dateHijri">18 Sya'ban 1447 H</span>
+    </div>
+
+    <!-- COUNTDOWN -->
+    <div class="countdown">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <span class="lbl" id="nextLbl">Jumat</span>
+      <span class="val" id="nextVal">-03:49:11</span>
+    </div>
+
+    <!-- MARQUEE -->
+    <div class="marquee">
+      <div class="track" id="track">
+        <div class="item">Selamat datang di Masjid Nurul Himmah</div>
+        <div class="item">Jagalah kebersihan dan ketertiban di area masjid</div>
+        <div class="item">Total infaq this month is Rp 75.279.000, 5 gold dinars — terima kasih</div>
+        <div class="item">Mohon matikan handphone atau gunakan mode silent</div>
+        <div class="item">Kajian rutin setiap Sabtu ba'da Maghrib bersama Ustadz Abdullah</div>
+        <div class="item">Selamat datang di Masjid Nurul Himmah</div>
+        <div class="item">Jagalah kebersihan dan ketertiban di area masjid</div>
+        <div class="item">Total infaq this month is Rp 75.279.000, 5 gold dinars — terima kasih</div>
+        <div class="item">Mohon matikan handphone atau gunakan mode silent</div>
+        <div class="item">Kajian rutin setiap Sabtu ba'da Maghrib bersama Ustadz Abdullah</div>
+      </div>
+    </div>
+
+    <!-- ADZAN OVERLAY -->
+    <div class="overlay" id="adzanOverlay">
+      <div class="overlay-inner">
+        <div class="label">WAKTU SHOLAT TELAH MASUK</div>
+        <div class="arabic">حَيَّ عَلَى الصَّلَاة</div>
+        <div class="prayer-name" id="adzanName">ASHAR</div>
+        <div class="place" id="adzanPlace">Masjid Nurul Himmah</div>
+        <div class="clock-big" id="adzanClock">15:27:00</div>
+        <div class="pulse"><span class="pulse-dot"></span><span>Hentikan aktivitas dan segera tunaikan sholat</span></div>
+      </div>
+    </div>
+
+    <!-- IQAMAH OVERLAY -->
+    <div class="overlay iqamah" id="iqamahOverlay">
+      <div class="overlay-inner">
+        <div class="label">IQAMAH DALAM</div>
+        <div class="countdown-huge"><span id="iqM">09</span><span class="sep">:</span><span id="iqS">42</span></div>
+        <div class="sub">Persiapkan diri untuk sholat <b id="iqName">Ashar</b> berjamaah</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Dev mode toggles -->
+<div class="modes">
+  <button class="active" data-mode="normal">Normal</button>
+  <button data-mode="adzan">Adzan Mode</button>
+  <button data-mode="iqamah">Iqamah Mode</button>
+  <a href="index.html">← Index</a>
+</div>
+
+<script>
+  // === tick marks for clock ===
+  (function(){
+    const ticks = document.getElementById('ticks');
+    if (!ticks) return;
+    for (let i = 0; i < 60; i++){
+      const angle = (i * 6) * Math.PI / 180;
+      const isHour = i % 5 === 0;
+      const r1 = isHour ? 86 : 89;
+      const r2 = 92;
+      const x1 = 100 + Math.sin(angle) * r1;
+      const y1 = 100 - Math.cos(angle) * r1;
+      const x2 = 100 + Math.sin(angle) * r2;
+      const y2 = 100 - Math.cos(angle) * r2;
+      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',x1); line.setAttribute('y1',y1);
+      line.setAttribute('x2',x2); line.setAttribute('y2',y2);
+      line.setAttribute('stroke', isHour ? '#f0cd86' : 'rgba(255,255,255,.3)');
+      line.setAttribute('stroke-width', isHour ? '1.8' : '.8');
+      ticks.appendChild(line);
+    }
+  })();
+
+  // === schedule (replace via PHP) ===
+  const SCHEDULE = [
+    { key:'shubuh',  name:'Shubuh',  time:'04:38' },
+    { key:'syuruq',  name:'Syuruq',  time:'05:53' },
+    { key:'dzuhur',  name:'Jumat',   time:'12:10' },
+    { key:'ashar',   name:'Ashar',   time:'15:27' },
+    { key:'maghrib', name:'Maghrib', time:'18:21' },
+    { key:'isya',    name:'Isya',    time:'19:32' },
+  ];
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  const DAY_ID = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const MON_ID = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+
+  function tick(){
+    const d = new Date();
+    // analog clock
+    const sec = d.getSeconds() + d.getMilliseconds()/1000;
+    const min = d.getMinutes() + sec/60;
+    const hr  = (d.getHours() % 12) + min/60;
+    const hHour = document.getElementById('h-hour');
+    const hMin  = document.getElementById('h-min');
+    const hSec  = document.getElementById('h-sec');
+    if (hHour) hHour.setAttribute('transform', `rotate(${hr*30} 100 100)`);
+    if (hMin)  hMin.setAttribute('transform',  `rotate(${min*6} 100 100)`);
+    if (hSec)  hSec.setAttribute('transform',  `rotate(${sec*6} 100 100)`);
+
+    // date strip
+    document.getElementById('dayName').textContent = DAY_ID[d.getDay()];
+    document.getElementById('dateMasehi').textContent =
+      d.getDate() + ' ' + MON_ID[d.getMonth()] + ' ' + d.getFullYear();
+
+    // adzan clock
+    const ac = document.getElementById('adzanClock');
+    if (ac) ac.textContent = pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+
+    updateNext();
+  }
+
+  function updateNext(){
+    const d = new Date();
+    const now = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
+    let next = null, nextSecs = Infinity;
+    for (const p of SCHEDULE){
+      if (p.key === 'syuruq') continue;
+      const [h,m] = p.time.split(':').map(Number);
+      let s = h*3600 + m*60;
+      if (s <= now) s += 24*3600;
+      const diff = s - now;
+      if (diff < nextSecs){ nextSecs = diff; next = p; }
+    }
+    if (!next) return;
+
+    document.querySelectorAll('.prayer').forEach(el=>{
+      el.classList.toggle('active', el.dataset.prayer === next.key);
+    });
+
+    const hh = Math.floor(nextSecs/3600);
+    const mm = Math.floor((nextSecs%3600)/60);
+    const ss = nextSecs%60;
+    document.getElementById('nextLbl').textContent = next.name;
+    document.getElementById('nextVal').textContent = '-' + pad(hh)+':'+pad(mm)+':'+pad(ss);
+  }
+
+  tick();
+  setInterval(tick, 1000);
+
+  // mode toggles
+  const adzanOv  = document.getElementById('adzanOverlay');
+  const iqamahOv = document.getElementById('iqamahOverlay');
+  document.querySelectorAll('.modes button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.modes button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const mode = btn.dataset.mode;
+      adzanOv.classList.toggle('show',  mode === 'adzan');
+      iqamahOv.classList.toggle('show', mode === 'iqamah');
+    });
+  });
+
+  // iqamah countdown demo
+  (function(){
+    let total = 9*60 + 42;
+    setInterval(()=>{
+      if (!iqamahOv.classList.contains('show')) return;
+      if (total <= 0) total = 10*60;
+      total -= 1;
+      document.getElementById('iqM').textContent = pad(Math.floor(total/60));
+      document.getElementById('iqS').textContent = pad(total%60);
+    }, 1000);
+  })();
+</script>
+</body>
+</html>
