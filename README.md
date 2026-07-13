@@ -114,21 +114,48 @@ Gunakan reverse proxy seperti **nginx** atau **Caddy** untuk HTTPS.
 
 ---
 
-## 📦 Deploy ke STB B860H
+## 📦 Deploy ke STB B860H / Perangkat Ubuntu
 
-Untuk deploy ke Set-Top Box atau perangkat Ubuntu lainnya, gunakan bundle installer:
+Digimos menyediakan **bundle installer** siap pakai untuk deploy ke Set-Top Box B860H atau perangkat Ubuntu lainnya (ARM64/x86_64, minimal 2GB RAM).
+
+Cukup **satu perintah** untuk install — cocok untuk pengguna awam.
+
+### Langkah Singkat
+
+**1. Buat bundle di PC Windows:**
+
+```powershell
+.\deploy\build-bundle.ps1
+```
+
+**2. Copy `digimos-bundle.tar.gz` ke STB** (via USB atau SCP)
+
+**3. Di STB, extract dan jalankan installer:**
 
 ```bash
-# Di Windows: buat bundle
-.\deploy\build-bundle.ps1
-
-# Di STB: extract dan install
 tar -xzf digimos-bundle.tar.gz
 cd digimos-bundle
 sudo bash install.sh
 ```
 
-Lihat [deploy/README.md](deploy/README.md) untuk panduan lengkap.
+Installer akan menanyakan nama masjid dan password admin, lalu otomatis:
+- Install Node.js 20, Nginx/Apache, dan dependencies
+- Setup database SQLite dengan data awal
+- Konfigurasi reverse proxy dan systemd service
+- Aplikasi langsung berjalan di `http://IP_STB`
+
+### Fitur Installer
+
+| Fitur | Keterangan |
+|-------|-----------|
+| Auto-detect web server | Jika Nginx/Apache sudah terinstall, langsung dipakai |
+| Database otomatis | SQLite — tidak perlu install database server |
+| Systemd service | Auto-start saat STB dinyalakan |
+| Reset password | `sudo bash /opt/digimos/reset-password.sh` |
+| Bahasa Indonesia | Semua pesan installer dalam Bahasa Indonesia |
+
+> **Panduan lengkap instalasi, troubleshooting, dan perintah berguna:**
+> **[deploy/README.md](deploy/README.md)**
 
 ---
 

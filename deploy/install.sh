@@ -30,9 +30,18 @@ header() {
 }
 
 # ── Fase 1: Cek Root ─────────────────────────────────────────
-header "DigiMOS Installer"
 echo ""
-echo "  Sistem display masjid berbasis web"
+echo -e "${CYAN}"
+cat << 'BANNER'
+     ____  _       _ __  __  ___  ____
+    |  _ \(_) __ _(_)  \/  |/ _ \/ ___|
+    | | | | |/ _` | | |\/| | | | \___ \
+    | |_| | | (_| | | |  | | |_| |___) |
+    |____/|_|\__, |_|_|  |_|\___/|____/
+             |___/
+BANNER
+echo -e "${NC}"
+echo -e "  ${BOLD}Sistem Display Masjid${NC} — Installer v1.0"
 echo "  Membutuhkan: Node.js, Nginx/Apache, SQLite"
 echo ""
 
