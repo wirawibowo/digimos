@@ -1,0 +1,18 @@
+[Unit]
+Description=DigiMOS - Sistem Display Masjid
+After=network.target
+
+[Service]
+Type=simple
+User=digimos
+Group=digimos
+WorkingDirectory=/opt/digimos
+EnvironmentFile=/opt/digimos/.env
+ExecStart=/usr/bin/node build/index.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

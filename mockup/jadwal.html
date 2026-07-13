@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<title>Digimos — Jadwal Bulanan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-800:#0a1f4d; --navy-700:#0e2d72; --navy-600:#1545a8; --navy-500:#2563d4;
+    --gold-400:#e3b864; --gold-300:#f0cd86; --border:#1e3a7a;
+    --panel:#0d2360; --panel-2:#0a1c4f; --muted:rgba(255,255,255,.65);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+    background:radial-gradient(80% 60% at 10% 0%, #0d2566 0%, transparent 60%), #050d24;
+    color:#fff; min-height:100vh;
+  }
+  .topbar{
+    height:64px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px; background:rgba(6,18,46,.7);
+    border-bottom:1px solid var(--border); backdrop-filter:blur(10px);
+    position:sticky; top:0; z-index:10;
+  }
+  .brand{ display:flex; align-items:center; gap:12px; font-weight:800; font-size:18px;}
+  .brand .mark{ width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#c89a45,#f0cd86 50%,#a37a2a); display:grid; place-items:center; color:#0a1f4d;}
+  .brand .mark svg{width:22px; height:22px;}
+  .brand .accent{ color:var(--gold-300);}
+  .nav{display:flex; gap:4px;}
+  .nav a{color:rgba(255,255,255,.7); text-decoration:none; padding:8px 14px; border-radius:8px; font-size:14px; font-weight:500;}
+  .nav a.active{background:var(--navy-600); color:#fff;}
+  .nav a:hover{color:#fff; background:rgba(255,255,255,.06);}
+  .user{display:flex; align-items:center; gap:10px; padding:6px 12px; background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:999px; font-size:13px;}
+  .avatar{width:28px; height:28px; border-radius:50%; background:var(--gold-400); color:#0a1f4d; display:grid; place-items:center; font-weight:700; font-size:13px;}
+
+  .wrap{ max-width:1400px; margin:0 auto; padding:32px 24px 60px; }
+  h1{ font-size:32px; font-weight:800; letter-spacing:-.5px; }
+  .sub{ color:var(--muted); margin-top:4px; font-size:15px; }
+
+  /* control bar */
+  .controls{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:24px; flex-wrap:wrap; gap:14px;
+  }
+  .month-nav{
+    display:flex; align-items:center; gap:14px;
+    background:linear-gradient(180deg,var(--panel), var(--panel-2));
+    border:1px solid var(--border);
+    padding:8px 12px;
+    border-radius:12px;
+  }
+  .month-nav .navbtn{
+    width:36px; height:36px; border-radius:8px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.1);
+    color:#fff;
+    display:grid; place-items:center;
+    cursor:pointer;
+  }
+  .month-nav .navbtn:hover{background:rgba(255,255,255,.12);}
+  .month-nav .navbtn svg{ width:18px; height:18px;}
+  .month-nav .label{
+    min-width:240px; text-align:center;
+    font-weight:700; font-size:18px;
+  }
+  .month-nav .hijri{
+    font-size:12px; color:var(--gold-300); font-weight:500;
+    display:block; margin-top:2px; letter-spacing:.3px;
+  }
+  .controls .right{display:flex; gap:10px; align-items:center;}
+  select.input{ background:#06112e; border:1px solid var(--border); color:#fff; padding:9px 14px; border-radius:8px; font-family:inherit; font-size:13px; font-weight:600;}
+  .btn{ background:linear-gradient(180deg,var(--navy-500),var(--navy-600)); border:1px solid rgba(243,205,134,.3); color:#fff; padding:9px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; display:inline-flex; align-items:center; gap:6px;}
+  .btn.gold{background:linear-gradient(180deg,var(--gold-300),var(--gold-400)); color:#0a1f4d;}
+  .btn.ghost{background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);}
+  .btn svg{width:15px; height:15px;}
+
+  /* table */
+  .tablewrap{
+    margin-top:20px;
+    background:linear-gradient(180deg,var(--panel), var(--panel-2));
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+  }
+  table.sched{ width:100%; border-collapse:collapse;}
+  table.sched th{
+    background:rgba(6,18,46,.5);
+    text-align:center;
+    font-size:11px; font-weight:700; letter-spacing:1.2px;
+    color:var(--muted);
+    padding:14px 8px;
+    border-bottom:1px solid var(--border);
+  }
+  table.sched th.day{ text-align:left; padding-left:20px; }
+  table.sched th.gold{ color:var(--gold-300);}
+  table.sched td{
+    padding:10px 8px;
+    text-align:center;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    font-variant-numeric:tabular-nums;
+    border-bottom:1px solid rgba(255,255,255,.05);
+  }
+  table.sched td.day{ text-align:left; padding-left:20px; font-weight:600;}
+  table.sched td.day .num{
+    display:inline-block;
+    width:30px; height:30px; line-height:30px;
+    text-align:center;
+    font-family:'Plus Jakarta Sans';
+    font-weight:700; font-size:14px;
+    border-radius:8px;
+    background:rgba(255,255,255,.05);
+    margin-right:10px;
+  }
+  table.sched td.day .name{ font-size:14px; }
+  table.sched td.day .hijri{ display:block; font-size:11px; color:var(--muted); font-weight:500; margin-left:40px; margin-top:-2px;}
+  table.sched tr.today td{
+    background:linear-gradient(180deg, rgba(243,205,134,.12), rgba(243,205,134,.04));
+  }
+  table.sched tr.today td.day .num{
+    background:linear-gradient(135deg,var(--gold-300),var(--gold-400));
+    color:#0a1f4d;
+  }
+  table.sched tr.today td.day .name{color:var(--gold-300);}
+  table.sched tr.friday td.day .name{color:#7bff9c;}
+  table.sched tr:hover td{ background:rgba(255,255,255,.03);}
+  table.sched tr.today:hover td{ background:linear-gradient(180deg, rgba(243,205,134,.18), rgba(243,205,134,.06));}
+
+  .legend{
+    margin-top:16px; display:flex; gap:18px; flex-wrap:wrap;
+    font-size:13px; color:var(--muted);
+  }
+  .legend .dot{ display:inline-block; width:12px; height:12px; border-radius:50%; vertical-align:middle; margin-right:6px;}
+  .legend .dot.today{background:var(--gold-300);}
+  .legend .dot.friday{background:#7bff9c;}
+  .legend .dot.normal{background:rgba(255,255,255,.4);}
+
+  /* mini summary cards */
+  .summary{
+    display:grid; grid-template-columns:repeat(6,1fr); gap:10px;
+    margin-top:16px;
+  }
+  .sum{
+    background:linear-gradient(180deg,var(--panel), var(--panel-2));
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px;
+    text-align:center;
+  }
+  .sum .l{ font-size:11px; letter-spacing:1.5px; color:var(--muted); font-weight:600;}
+  .sum .v{ font-family:'Inter',sans-serif; font-weight:800; font-size:24px; margin-top:6px; font-variant-numeric:tabular-nums;}
+  .sum.gold .v{ color:var(--gold-300);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="mark"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.4 0 .8.2 1 .6l1.2 2c.2.4.2.8 0 1.2L12.8 8.4c-.1.2-.2.4-.2.6V11h3.3a3 3 0 0 1 3 3v7H5V14a3 3 0 0 1 3-3h3.3V9a1 1 0 0 0-.2-.6L9.8 5.8a1 1 0 0 1 0-1.2l1.2-2c.2-.4.6-.6 1-.6Z"/></svg></span>
+    <span><span class="accent">Digi</span>mos <span style="opacity:.4;font-weight:500">/ jadwal</span></span>
+  </div>
+  <nav class="nav">
+    <a href="index.html">Home</a>
+    <a href="admin.html">Admin</a>
+    <a href="settings.html">Tema</a>
+    <a href="jadwal.html" class="active">Jadwal Bulanan</a>
+    <a href="display.html">Display</a>
+  </nav>
+  <div class="user"><span class="avatar">A</span><span>Admin Masjid</span></div>
+</div>
+
+<div class="wrap">
+  <h1>Jadwal Sholat Bulanan</h1>
+  <p class="sub">Lihat jadwal sholat sebulan penuh. Data sinkron otomatis dari API Kemenag untuk lokasi Depok.</p>
+
+  <!-- Summary mini cards -->
+  <div class="summary">
+    <div class="sum"><div class="l">SHUBUH RATA²</div><div class="v">04:42</div></div>
+    <div class="sum"><div class="l">SYURUQ RATA²</div><div class="v">05:54</div></div>
+    <div class="sum"><div class="l">DZUHUR RATA²</div><div class="v">12:09</div></div>
+    <div class="sum gold"><div class="l">JUMAT</div><div class="v">4 hari</div></div>
+    <div class="sum"><div class="l">RAMADAN</div><div class="v">19 hari</div></div>
+    <div class="sum"><div class="l">TOTAL HARI</div><div class="v">31</div></div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="month-nav">
+      <button class="navbtn" title="Prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="label">
+        Maret 2026
+        <span class="hijri">Sya'ban — Ramadan 1447H</span>
+      </div>
+      <button class="navbtn" title="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+    <div class="right">
+      <select class="input">
+        <option>Kota Depok</option>
+        <option>Jakarta Pusat</option>
+        <option>Bogor</option>
+      </select>
+      <button class="btn ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><polyline points="21 3 21 8 16 8"/></svg> Sinkron</button>
+      <button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> Unduh PDF</button>
+      <button class="btn gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg> Cetak</button>
+    </div>
+  </div>
+
+  <!-- Schedule table -->
+  <div class="tablewrap">
+    <table class="sched">
+      <thead>
+        <tr>
+          <th class="day">HARI</th>
+          <th>SHUBUH</th>
+          <th>SYURUQ</th>
+          <th class="gold">DZUHUR</th>
+          <th>ASHAR</th>
+          <th>MAGHRIB</th>
+          <th>ISYA</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="legend">
+    <span><span class="dot today"></span>Hari ini</span>
+    <span><span class="dot friday"></span>Jumat (Sholat Jumat)</span>
+    <span><span class="dot normal"></span>Hari biasa</span>
+    <span style="margin-left:auto;">Last sync: Hari ini, 06:00 WIB · Sumber: api.kemenag.go.id</span>
+  </div>
+</div>
+
+<script>
+  // Hardcoded sample data for March 2026
+  const DAYS_ID = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const HIJRI_MAP = {
+    // March 2026 ≈ 12 Ramadan starts Mar 2 (placeholder mapping)
+  };
+  const MONTH = 2; // March (0-indexed)
+  const YEAR = 2026;
+  const TODAY = 4; // for highlight
+  // Sample times — small daily drift
+  function pad(n){return String(n).padStart(2,'0');}
+  function timeAt(baseH, baseM, dayOffset, drift){
+    let total = baseH*60 + baseM + Math.round(dayOffset*drift);
+    return pad(Math.floor(total/60))+':'+pad(total%60);
+  }
+  const tbody = document.getElementById('tbody');
+  const daysInMonth = new Date(YEAR, MONTH+1, 0).getDate();
+  for (let d=1; d<=daysInMonth; d++){
+    const date = new Date(YEAR, MONTH, d);
+    const wd = date.getDay();
+    const isToday = (d === TODAY);
+    const isFriday = (wd === 5);
+    const dayName = DAYS_ID[wd];
+    // Hijri rough: assume Mar 1 = 12 Ramadan 1447H, monotonic
+    const hijriDay = 12 + (d-1);
+    let hijriLabel = '';
+    if (hijriDay <= 30) hijriLabel = hijriDay + ' Ramadan 1447H';
+    else hijriLabel = (hijriDay-30) + ' Syawal 1447H';
+
+    const tr = document.createElement('tr');
+    if (isToday) tr.className = 'today';
+    else if (isFriday) tr.className = 'friday';
+
+    tr.innerHTML = `
+      <td class="day">
+        <span class="num">${pad(d)}</span>
+        <span class="name">${dayName}${isFriday ? " (Jumat)" : ""}</span>
+        <span class="hijri">${hijriLabel}</span>
+      </td>
+      <td>${timeAt(4, 41, d, 0.05)}</td>
+      <td>${timeAt(5, 53, d, 0.05)}</td>
+      <td style="color:var(--gold-300);">${timeAt(12, 8, d, -0.02)}</td>
+      <td>${timeAt(15, 9, d, -0.03)}</td>
+      <td>${timeAt(18, 14, d, -0.04)}</td>
+      <td>${timeAt(19, 23, d, -0.04)}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+</script>
+</body>
+</html>

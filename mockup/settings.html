@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<title>Digimos — Pengaturan Tema</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-800:#0a1f4d; --navy-700:#0e2d72; --navy-600:#1545a8; --navy-500:#2563d4;
+    --gold-400:#e3b864; --gold-300:#f0cd86; --border:#1e3a7a;
+    --panel:#0d2360; --panel-2:#0a1c4f; --muted:rgba(255,255,255,.65);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+    background:radial-gradient(80% 60% at 10% 0%, #0d2566 0%, transparent 60%), #050d24;
+    color:#fff; min-height:100vh;
+  }
+  .topbar{
+    height:64px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px; background:rgba(6,18,46,.7);
+    border-bottom:1px solid var(--border); backdrop-filter:blur(10px);
+    position:sticky; top:0; z-index:10;
+  }
+  .brand{ display:flex; align-items:center; gap:12px; font-weight:800; font-size:18px;}
+  .brand .mark{ width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#c89a45,#f0cd86 50%,#a37a2a); display:grid; place-items:center; color:#0a1f4d;}
+  .brand .mark svg{width:22px; height:22px;}
+  .brand .accent{ color:var(--gold-300);}
+  .nav{display:flex; gap:4px;}
+  .nav a{color:rgba(255,255,255,.7); text-decoration:none; padding:8px 14px; border-radius:8px; font-size:14px; font-weight:500;}
+  .nav a.active{background:var(--navy-600); color:#fff;}
+  .nav a:hover{color:#fff; background:rgba(255,255,255,.06);}
+  .user{display:flex; align-items:center; gap:10px; padding:6px 12px; background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:999px; font-size:13px;}
+  .avatar{width:28px; height:28px; border-radius:50%; background:var(--gold-400); color:#0a1f4d; display:grid; place-items:center; font-weight:700; font-size:13px;}
+
+  .wrap{ max-width:1280px; margin:0 auto; padding:32px 24px 80px; }
+  h1{ font-size:32px; font-weight:800; letter-spacing:-.5px; }
+  .sub{ color:var(--muted); margin-top:4px; font-size:15px; }
+
+  /* theme grid */
+  .themes{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:22px;
+    margin-top:28px;
+  }
+  .theme{
+    background:linear-gradient(180deg,var(--panel), var(--panel-2));
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+    cursor:pointer;
+    transition:transform .2s, border-color .2s;
+    position:relative;
+  }
+  .theme:hover{ transform:translateY(-2px); }
+  .theme.selected{
+    border:2px solid var(--gold-300);
+    box-shadow:0 0 0 4px rgba(243,205,134,.18), 0 14px 36px rgba(0,0,0,.4);
+  }
+  .theme .check{
+    position:absolute; top:12px; right:12px;
+    width:30px; height:30px; border-radius:50%;
+    background:var(--gold-300); color:#0a1f4d;
+    display:none; place-items:center; font-weight:700;
+    z-index:2;
+  }
+  .theme.selected .check{ display:grid; }
+  .theme .check svg{ width:18px; height:18px;}
+
+  .preview{
+    aspect-ratio:16/9;
+    background:#000;
+    position:relative;
+    overflow:hidden;
+  }
+  .preview .bg{
+    position:absolute; inset:0;
+    background:url('assets/masjid-bg.png') center center/cover;
+  }
+  .ovr{ position:absolute; inset:0; z-index:1; display:flex; }
+  .ovr.t1, .ovr.t4, .ovr.t5{ flex-direction:column; }
+
+  /* shared mini chip styles */
+  .mini-chip{
+    background:rgba(255,255,255,.95); color:#0a3d8f;
+    padding:4px 10px; border-radius:999px;
+    font-size:10px; font-weight:700;
+    display:inline-flex; align-items:center; gap:5px;
+  }
+  .mini-chip::before{
+    content:"⏱"; font-size:11px;
+  }
+  .mini-lg{
+    width:18px; height:18px; border-radius:4px;
+    background:linear-gradient(135deg,#c89a45,#f0cd86 50%,#a37a2a);
+    display:inline-block; flex:none;
+  }
+  .mini-acc{ color:var(--gold-300); }
+
+  /* ====== TEMA 1 — Foto full-bleed + bottom blue bar ====== */
+  .t1{ }
+  .t1 .bg{ position:absolute; inset:0; background:url('assets/masjid-bg.png') center/cover; }
+  .t1 .top{
+    position:absolute; top:0; left:0; right:0;
+    padding:10px 12px;
+    background:linear-gradient(180deg, rgba(6,18,46,.7), transparent 80%);
+    color:#fff; z-index:2;
+    display:flex; align-items:center; gap:8px;
+  }
+  .t1 .top .info .ttl{ font-size:14px; font-weight:800; line-height:1; }
+  .t1 .top .info .sub{ font-size:8px; opacity:.85; margin-top:3px; }
+  .t1 .cd-left{
+    position:absolute; left:10px; top:48%; z-index:3;
+  }
+  .t1 .bar{
+    margin-top:auto; position:relative; z-index:2;
+    background:#1545a8;
+    padding:8px 8px 6px;
+    display:flex; gap:4px; align-items:flex-end;
+  }
+  .t1 .bar .clk{ padding:0 6px 2px 4px; color:#fff; }
+  .t1 .bar .clk .t{ font-family:'Inter',sans-serif; font-weight:800; font-size:22px; line-height:1; font-variant-numeric:tabular-nums; letter-spacing:-1px;}
+  .t1 .bar .clk .d{ font-size:7px; font-weight:600; margin-top:3px;}
+  .t1 .bar .c{ flex:1; text-align:center; color:#fff; }
+  .t1 .bar .c .n{ font-size:8px; font-weight:700; letter-spacing:.5px;}
+  .t1 .bar .c .t{ font-family:'Inter',sans-serif; font-weight:800; font-size:16px; line-height:1; margin-top:3px; font-variant-numeric:tabular-nums;}
+  .t1 .bar .c .iq{ font-size:7px; background:rgba(0,0,0,.18); padding:1px 4px; border-radius:3px; margin-top:3px; display:inline-block;}
+
+  /* ====== TEMA 2 — Panel biru kiri + foto kanan + curved cut ====== */
+  .t2{ }
+  .t2 .left{
+    width:46%; background:#2575e8;
+    padding:8px 8px; display:flex; flex-direction:column; gap:2px;
+    position:relative; z-index:2;
+  }
+  /* curved/torn right edge */
+  .t2 .left::after{
+    content:""; position:absolute; top:0; right:-8px; bottom:0; width:14px;
+    background:#2575e8;
+    -webkit-mask:radial-gradient(7px 7px at 0 7px, transparent 98%, #000 100%) 0 0/14px 14px;
+            mask:radial-gradient(7px 7px at 0 7px, transparent 98%, #000 100%) 0 0/14px 14px;
+  }
+  .t2 .left .clk{ text-align:center; color:#fff; padding:2px 0 6px;}
+  .t2 .left .clk .t{ font-family:'Inter',sans-serif; font-weight:800; font-size:30px; line-height:1; font-variant-numeric:tabular-nums; letter-spacing:-1px;}
+  .t2 .left .clk .d{ font-size:8px; font-weight:600; margin-top:4px;}
+  .t2 .row{
+    display:flex; align-items:center; gap:6px;
+    color:#fff; padding:1px 4px; border-radius:4px;
+    flex:1; min-height:0;
+  }
+  .t2 .row .ic{ width:11px; height:11px; border-radius:50%; background:rgba(255,255,255,.25); flex:none;}
+  .t2 .row .n{ flex:1; font-weight:700; font-size:9px; letter-spacing:.3px;}
+  .t2 .row .t{ font-family:'Inter',sans-serif; font-weight:800; font-size:15px; font-variant-numeric:tabular-nums; min-width:42px; text-align:right;}
+  .t2 .row .iq{ font-size:7px; opacity:.85; min-width:38px; text-align:right; line-height:1.1;}
+  .t2 .row.act{ background:rgba(6,18,46,.55);}
+  .t2 .row.act .t{ color:#ffd93d;}
+  .t2 .right{ flex:1; position:relative;}
+  .t2 .right .bg{ position:absolute; inset:0; background:url('assets/masjid-bg.png') center/cover; }
+  .t2 .right::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(6,18,46,.5) 0%, transparent 40%, transparent 60%, rgba(6,18,46,.7) 100%);
+  }
+  .t2 .right .head{
+    position:absolute; right:10px; top:8px;
+    color:#fff; font-size:11px; font-weight:800; text-align:right;
+    z-index:2; display:flex; align-items:center; gap:6px;
+  }
+  .t2 .right .cd{ position:absolute; right:10px; bottom:10px; z-index:2;}
+
+  /* ====== TEMA 3 — sidebar + analog overlap + foto ====== */
+  .t3{ }
+  .t3 .left{
+    width:38%;
+    background:linear-gradient(180deg, rgba(13,40,108,.95), rgba(8,25,66,.97));
+    border-right:1px solid rgba(243,205,134,.4);
+    padding:6px 6px; display:flex; flex-direction:column; gap:2px;
+    position:relative; z-index:2;
+  }
+  .t3 .row{
+    display:flex; align-items:center; gap:5px;
+    color:#fff; padding:0 2px;
+    flex:1; min-height:0;
+  }
+  .t3 .row .ic{ width:12px; height:12px; border-radius:50%; background:rgba(243,205,134,.18); flex:none;}
+  .t3 .row .body{ flex:1; min-width:0;}
+  .t3 .row .n{ font-size:8px; opacity:.9; font-weight:600; line-height:1;}
+  .t3 .row .t{ font-family:'Inter',sans-serif; font-weight:800; font-size:13px; line-height:1; color:var(--gold-300); font-variant-numeric:tabular-nums; margin-top:1px;}
+  .t3 .row .iq{ font-size:6px; opacity:.7; margin-top:1px;}
+  .t3 .right{ flex:1; position:relative;}
+  .t3 .right .bg{ position:absolute; inset:0; background:url('assets/masjid-bg.png') center/cover; }
+  .t3 .right .head{
+    position:absolute; right:10px; top:8px; color:#fff;
+    font-size:11px; font-weight:800; z-index:2;
+    display:flex; align-items:center; gap:6px;
+  }
+  .t3 .right .cd{ position:absolute; right:10px; bottom:10px; z-index:2;}
+
+  .analog-clock{
+    position:absolute;
+    width:60px; height:60px;
+    border-radius:50%;
+    background:radial-gradient(circle, #0a1f4d 0%, #050a1f 100%);
+    border:2px solid var(--gold-400);
+    z-index:3;
+    display:grid; place-items:center;
+  }
+  .analog-clock::before{
+    content:""; position:absolute; left:50%; top:50%;
+    width:18px; height:2px; background:var(--gold-300);
+    transform:translate(0,-50%) rotate(-30deg); transform-origin:0 50%;
+    border-radius:2px;
+  }
+  .analog-clock::after{
+    content:""; position:absolute; left:50%; top:50%;
+    width:22px; height:1.5px; background:#fff;
+    transform:translate(0,-50%) rotate(60deg); transform-origin:0 50%;
+    border-radius:2px;
+  }
+  .analog-clock .dot{ width:5px; height:5px; border-radius:50%; background:var(--gold-300); position:relative; z-index:2;}
+
+  .t3 .analog-clock{ left:38%; top:50%; transform:translate(-50%,-50%); }
+
+  /* ====== TEMA 4 — 6 kartu biru kiri + foto kanan + header putih bawah ====== */
+  .t4{ }
+  .t4 .body{ flex:1; display:flex; min-height:0;}
+  .t4 .left{
+    width:30%; padding:6px;
+    display:flex; flex-direction:column; gap:5px;
+  }
+  .t4 .left .card{
+    background:#2575e8;
+    border-radius:5px;
+    padding:3px 8px;
+    color:#fff;
+    display:flex; align-items:center; justify-content:space-between;
+    flex:1; gap:6px;
+  }
+  .t4 .left .card .n{ font-size:8px; font-weight:700;}
+  .t4 .left .card .t{ font-family:'Inter',sans-serif; font-weight:800; font-size:15px; font-variant-numeric:tabular-nums; line-height:1;}
+  .t4 .left .card.act{ background:#0a1f4d; border:1px solid rgba(255,255,255,.2);}
+  .t4 .left .card.act .t{ color:#ffd93d;}
+  .t4 .right{ flex:1; position:relative;}
+  .t4 .right .bg{ position:absolute; inset:0; background:url('assets/masjid-bg.png') center/cover; }
+  .t4 .right .clk{
+    position:absolute; right:10px; top:8px;
+    color:#fff; text-align:right; z-index:2;
+  }
+  .t4 .right .clk .t{ font-family:'Inter',sans-serif; font-weight:800; font-size:22px; line-height:1; font-variant-numeric:tabular-nums;}
+  .t4 .right .clk .d{ font-size:7px; font-weight:600; margin-top:3px; line-height:1.3;}
+  .t4 .right .cd{ position:absolute; right:10px; bottom:30px; z-index:2;}
+  .t4 .foot{
+    background:rgba(245,245,250,.96);
+    color:#0a1f4d;
+    padding:6px 10px;
+    font-size:13px; font-weight:800;
+    display:flex; align-items:center; gap:8px;
+    border-top:1px solid rgba(243,205,134,.6);
+  }
+  .t4 .foot .info .ttl{ line-height:1;}
+  .t4 .foot .info .sub{ font-size:7px; font-weight:500; opacity:.7; margin-top:3px;}
+  .t4 .foot .mini-acc{ color:#b58a32;}
+
+  /* ====== TEMA 5 — Pill header + foto besar + analog + bottom bar ====== */
+  .t5{ }
+  .t5 .bg{ position:absolute; inset:0; background:url('assets/masjid-bg.png') center/cover; }
+  .t5 .head{
+    position:absolute; top:8px; left:0;
+    background:linear-gradient(90deg,#1545a8,#1545a8 80%, transparent);
+    padding:6px 30px 6px 10px;
+    color:#fff;
+    border-radius:0 14px 14px 0;
+    z-index:2;
+    display:flex; align-items:center; gap:8px;
+  }
+  .t5 .head .info .ttl{ font-size:13px; font-weight:800; line-height:1;}
+  .t5 .head .info .sub{ font-size:7px; opacity:.95; margin-top:3px;}
+  .t5 .analog-clock{ left:14px; bottom:50px; }
+  .t5 .bar{
+    margin-top:auto; position:relative; z-index:2;
+    background:#1545a8;
+    padding:8px 10px;
+    display:flex; gap:6px;
+  }
+  .t5 .bar .c{ flex:1; text-align:center; color:#fff; }
+  .t5 .bar .c .n{ font-size:9px; font-weight:600;}
+  .t5 .bar .c .t{ font-family:'Inter',sans-serif; font-weight:800; font-size:17px; line-height:1; margin-top:3px; font-variant-numeric:tabular-nums;}
+  .t5 .bar .c.act .t{ color:#ffd93d;}
+
+  /* ====== TEMA 6 — Panel biru kiri + analog overlap + foto kanan ====== */
+  .t6{ }
+  .t6 .left{
+    width:36%; background:#1545a8;
+    padding:6px 6px; display:flex; flex-direction:column; gap:2px;
+    position:relative; z-index:1;
+  }
+  .t6 .row{
+    display:flex; align-items:center; gap:5px;
+    color:#fff; padding:0 2px 3px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    flex:1; min-height:0;
+  }
+  .t6 .row:last-child{ border-bottom:none;}
+  .t6 .row .ic{ width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,.22); flex:none;}
+  .t6 .row .body{ flex:1; min-width:0;}
+  .t6 .row .n{ font-size:8px; opacity:.95; line-height:1;}
+  .t6 .row .t{ font-family:'Inter',sans-serif; font-weight:800; font-size:13px; line-height:1; font-variant-numeric:tabular-nums; margin-top:1px;}
+  .t6 .row.act .t{ color:#ffd93d;}
+  .t6 .right{ flex:1; position:relative; overflow:hidden; }
+  .t6 .right .bg{ position:absolute; inset:0; background:url('assets/masjid-bg.png') center/cover; }
+  .t6 .analog-clock{
+    left:36%; top:50%; transform:translate(-50%,-50%);
+    width:78px; height:78px;
+    background:radial-gradient(circle,#1f5dd6 0%, #0a1f4d 100%);
+    border:3px solid #2575e8;
+  }
+  .t6 .analog-clock::before{ background:#ff5050; transform:translate(0,-50%) rotate(-20deg); }
+  .t6 .analog-clock::after{ background:#fff; transform:translate(0,-50%) rotate(70deg); }
+  .t6 .right .head{
+    position:absolute; right:10px; top:8px;
+    color:#fff; font-size:11px; font-weight:800; text-align:right; z-index:2;
+    display:flex; align-items:center; gap:6px;
+  }
+  .t6 .right .date{
+    position:absolute; right:10px; top:34px;
+    background:#1545a8; color:#fff;
+    padding:3px 8px; border-radius:999px;
+    font-size:7px; font-weight:700; z-index:2;
+  }
+  .t6 .right .cd{ position:absolute; right:10px; bottom:10px; z-index:2;}
+
+  .theme .meta{
+    padding:14px 16px;
+  }
+  .theme .meta h3{ font-size:15px; font-weight:700; letter-spacing:-.2px; }
+  .theme .meta .desc{ font-size:12px; color:var(--muted); margin-top:3px;}
+  .theme .tags{ display:flex; gap:5px; margin-top:8px;}
+  .theme .tag{
+    font-size:10px; padding:3px 8px; border-radius:6px;
+    background:rgba(255,255,255,.06); color:rgba(255,255,255,.7);
+    font-weight:600; letter-spacing:.3px;
+  }
+  .theme .tag.gold{ background:rgba(243,205,134,.12); color:var(--gold-300);}
+
+  /* settings rows */
+  .settings{
+    margin-top:36px;
+    display:grid; grid-template-columns:repeat(2,1fr);
+    gap:18px;
+  }
+  .card{
+    background:linear-gradient(180deg,var(--panel), var(--panel-2));
+    border:1px solid var(--border); border-radius:16px; padding:22px;
+  }
+  .card h2{font-size:18px; font-weight:700;}
+  .opt{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 0; border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .opt:last-child{border-bottom:none;}
+  .opt .l{ font-size:14px; font-weight:600;}
+  .opt .d{font-size:12px; color:var(--muted); margin-top:2px;}
+  .swatch-row{ display:flex; gap:8px;}
+  .sw{ width:32px; height:32px; border-radius:8px; cursor:pointer; border:2px solid transparent;}
+  .sw.sel{ border-color:#fff; box-shadow:0 0 0 2px rgba(243,205,134,.6);}
+  .toggle{ position:relative; display:inline-block; width:42px; height:24px;}
+  .toggle input{display:none;}
+  .toggle .slot{position:absolute; inset:0; background:rgba(255,255,255,.1); border:1px solid var(--border); border-radius:999px; cursor:pointer;}
+  .toggle .slot::after{content:""; position:absolute; left:2px; top:2px; width:18px; height:18px; background:#fff; border-radius:50%; transition:.2s;}
+  .toggle input:checked + .slot{background:var(--navy-600); border-color:var(--navy-500);}
+  .toggle input:checked + .slot::after{left:20px;}
+  select.input{ background:#06112e; border:1px solid var(--border); color:#fff; padding:8px 14px; border-radius:8px; font-family:inherit; font-size:13px; font-weight:600;}
+  .btn{ background:linear-gradient(180deg,var(--navy-500),var(--navy-600)); border:1px solid rgba(243,205,134,.3); color:#fff; padding:10px 18px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;}
+  .btn.gold{ background:linear-gradient(180deg,var(--gold-300),var(--gold-400)); color:#0a1f4d; }
+  .actions{ margin-top:28px; display:flex; gap:10px; justify-content:flex-end;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="mark"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.4 0 .8.2 1 .6l1.2 2c.2.4.2.8 0 1.2L12.8 8.4c-.1.2-.2.4-.2.6V11h3.3a3 3 0 0 1 3 3v7H5V14a3 3 0 0 1 3-3h3.3V9a1 1 0 0 0-.2-.6L9.8 5.8a1 1 0 0 1 0-1.2l1.2-2c.2-.4.6-.6 1-.6Z"/></svg></span>
+    <span><span class="accent">Digi</span>mos <span style="opacity:.4;font-weight:500">/ tema</span></span>
+  </div>
+  <nav class="nav">
+    <a href="index.html">Home</a>
+    <a href="admin.html">Admin</a>
+    <a href="settings.html" class="active">Tema</a>
+    <a href="jadwal.html">Jadwal Bulanan</a>
+    <a href="display.html">Display</a>
+  </nav>
+  <div class="user"><span class="avatar">A</span><span>Admin Masjid</span></div>
+</div>
+
+<div class="wrap">
+  <h1>Pengaturan Tema Display</h1>
+  <p class="sub">Pilih layout dan personalisasi tampilan TV masjid. Perubahan langsung diterapkan ke semua display.</p>
+
+  <!-- Theme cards -->
+  <div class="themes" id="themes">
+
+    <!-- ========== TEMA 1 — Foto full + bottom blue bar ========== -->
+    <div class="theme selected" data-theme="t1">
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="preview">
+        <div class="ovr t1">
+          <div class="bg"></div>
+          <div class="top">
+            <span class="mini-lg"></span>
+            <div class="info">
+              <div class="ttl"><span class="mini-acc">Masjid</span> Nurul Himmah</div>
+              <div class="sub">Kp. Duren Seribu, Bojongsari, Depok · Telp. 0251-8064544</div>
+            </div>
+          </div>
+          <span class="mini-chip cd-left">Jumu'ah  -05:35</span>
+          <div class="bar">
+            <div class="clk">
+              <div class="t">06:34</div>
+              <div class="d">Friday  Feb 20<br>02 Ramadan 1447H</div>
+            </div>
+            <div class="c"><div class="n">SHUBUH</div><div class="t">04:42</div><div class="iq">IQ 04:52</div></div>
+            <div class="c"><div class="n">SHURUQ</div><div class="t">05:55</div><div class="iq">06:10</div></div>
+            <div class="c"><div class="n">JUMU'AH</div><div class="t">12:10</div><div class="iq">IQ 12:20</div></div>
+            <div class="c"><div class="n">ASR</div><div class="t">15:19</div><div class="iq">IQ 15:29</div></div>
+            <div class="c"><div class="n">MAGHRIB</div><div class="t">18:18</div><div class="iq">IQ 18:28</div></div>
+            <div class="c"><div class="n">ISHA</div><div class="t">19:28</div><div class="iq">IQ 19:38</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="meta">
+        <h3>Tema 1 — Hero Penuh</h3>
+        <div class="desc">Foto masjid memenuhi layar, jadwal sebagai bar bawah dengan jam digital besar.</div>
+        <div class="tags"><span class="tag gold">Rekomendasi</span><span class="tag">Cinematic</span></div>
+      </div>
+    </div>
+
+    <!-- ========== TEMA 2 — Panel biru kiri + foto kanan ========== -->
+    <div class="theme" data-theme="t2">
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="preview">
+        <div class="ovr t2">
+          <div class="left">
+            <div class="clk"><div class="t">20:30</div><div class="d">Thursday Feb 19 · 01 Ramadan 1447H</div></div>
+            <div class="row"><span class="ic"></span><span class="n">SHUBUH</span><span class="t">04:41</span><span class="iq">IQ 04:51</span></div>
+            <div class="row"><span class="ic"></span><span class="n">SHURUQ</span><span class="t">05:55</span><span class="iq">—</span></div>
+            <div class="row"><span class="ic"></span><span class="n">DHUHR</span><span class="t">12:10</span><span class="iq">IQ 12:20</span></div>
+            <div class="row"><span class="ic"></span><span class="n">ASR</span><span class="t">15:20</span><span class="iq">IQ 15:30</span></div>
+            <div class="row"><span class="ic"></span><span class="n">MAGHRIB</span><span class="t">18:18</span><span class="iq">IQ 18:28</span></div>
+            <div class="row act"><span class="ic"></span><span class="n">ISHA</span><span class="t">19:28</span><span class="iq">IQ 19:38</span></div>
+          </div>
+          <div class="right">
+            <div class="bg"></div>
+            <div class="head"><span class="mini-acc">Masjid</span> Nurul Himmah <span class="mini-lg"></span></div>
+            <span class="mini-chip cd">Shubuh -07:00</span>
+          </div>
+        </div>
+      </div>
+      <div class="meta">
+        <h3>Tema 2 — Panel Biru</h3>
+        <div class="desc">Jam besar + list lengkap di panel biru kiri, foto kanan dengan tepi torn-paper.</div>
+        <div class="tags"><span class="tag">Compact</span><span class="tag">Modern</span></div>
+      </div>
+    </div>
+
+    <!-- ========== TEMA 3 — Sidebar gelap + analog overlap ========== -->
+    <div class="theme" data-theme="t3">
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="preview">
+        <div class="ovr t3">
+          <div class="left">
+            <div class="row"><span class="ic"></span><div class="body"><div class="n">Shubuh</div><div class="t">04:38</div><div class="iq">IQAMAH 04:48</div></div></div>
+            <div class="row"><span class="ic"></span><div class="body"><div class="n">Syuruq</div><div class="t">05:53</div><div class="iq">05:53 - 06:08</div></div></div>
+            <div class="row"><span class="ic"></span><div class="body"><div class="n">Jumat</div><div class="t">12:10</div><div class="iq">IQAMAH 12:20</div></div></div>
+            <div class="row"><span class="ic"></span><div class="body"><div class="n">Ashar</div><div class="t">15:27</div><div class="iq">IQAMAH 15:37</div></div></div>
+            <div class="row"><span class="ic"></span><div class="body"><div class="n">Maghrib</div><div class="t">18:21</div><div class="iq">IQAMAH 18:31</div></div></div>
+            <div class="row"><span class="ic"></span><div class="body"><div class="n">Isya</div><div class="t">19:32</div><div class="iq">IQAMAH 19:42</div></div></div>
+          </div>
+          <div class="right">
+            <div class="bg"></div>
+            <div class="head"><span class="mini-acc">Masjid</span> Nurul Himmah <span class="mini-lg"></span></div>
+            <span class="mini-chip cd">Jumat -03:49</span>
+          </div>
+          <div class="analog-clock"><span class="dot"></span></div>
+        </div>
+      </div>
+      <div class="meta">
+        <h3>Tema 3 — Analog Vintage</h3>
+        <div class="desc">List sholat dengan jam analog gold tumpang tindih di tengah. Cocok untuk masjid tradisional.</div>
+        <div class="tags"><span class="tag">Analog</span><span class="tag">Klasik</span></div>
+      </div>
+    </div>
+
+    <!-- ========== TEMA 4 — 6 kartu biru kiri + header bawah ========== -->
+    <div class="theme" data-theme="t4">
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="preview">
+        <div class="ovr t4">
+          <div class="body">
+            <div class="left">
+              <div class="card"><span class="n">Shubuh</span><span class="t">04:05</span></div>
+              <div class="card"><span class="n">Shuruq</span><span class="t">05:23</span></div>
+              <div class="card"><span class="n">Jumu'ah</span><span class="t">11:44</span></div>
+              <div class="card act"><span class="n">Asr</span><span class="t">15:07</span></div>
+              <div class="card"><span class="n">Maghrib</span><span class="t">17:57</span></div>
+              <div class="card"><span class="n">Isha</span><span class="t">19:11</span></div>
+            </div>
+            <div class="right">
+              <div class="bg"></div>
+              <div class="clk"><div class="t">16:51</div><div class="d">Friday 26 Nov<br>21 Rabi' al-Thani 1443H</div></div>
+              <span class="mini-chip cd">Maghrib -01:05</span>
+            </div>
+          </div>
+          <div class="foot">
+            <span class="mini-lg"></span>
+            <div class="info">
+              <div class="ttl"><span class="mini-acc">Masjid</span> Nurul Himmah</div>
+              <div class="sub">Kp. Duren Seribu, Bojongsari, Depok</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="meta">
+        <h3>Tema 4 — Kartu Biru</h3>
+        <div class="desc">Setiap waktu sholat dalam kartu biru independen. Header masjid pindah ke bawah putih.</div>
+        <div class="tags"><span class="tag">Card-style</span><span class="tag">Sederhana</span></div>
+      </div>
+    </div>
+
+    <!-- ========== TEMA 5 — Pill header + foto besar + bottom bar ========== -->
+    <div class="theme" data-theme="t5">
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="preview">
+        <div class="ovr t5">
+          <div class="bg"></div>
+          <div class="head">
+            <span class="mini-lg"></span>
+            <div class="info">
+              <div class="ttl"><span class="mini-acc">Masjid</span> Nurul Himmah</div>
+              <div class="sub">Friday 26 Nov 2021 / 21 Rabi' al-Thani 1443H</div>
+            </div>
+          </div>
+          <div class="analog-clock"><span class="dot"></span></div>
+          <div class="bar">
+            <div class="c"><div class="n">Shubuh</div><div class="t">04:05</div></div>
+            <div class="c"><div class="n">Shuruq</div><div class="t">05:23</div></div>
+            <div class="c"><div class="n">Jumu'ah</div><div class="t">11:44</div></div>
+            <div class="c act"><div class="n">Asr</div><div class="t">15:07</div></div>
+            <div class="c"><div class="n">Maghrib</div><div class="t">17:57</div></div>
+            <div class="c"><div class="n">Isha</div><div class="t">19:11</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="meta">
+        <h3>Tema 5 — Pill Header</h3>
+        <div class="desc">Header dalam pill biru kiri-atas, foto dominan, analog clock + strip bawah.</div>
+        <div class="tags"><span class="tag">Visual-rich</span></div>
+      </div>
+    </div>
+
+    <!-- ========== TEMA 6 — Panel biru + analog overlap ========== -->
+    <div class="theme" data-theme="t6">
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="preview">
+        <div class="ovr t6">
+          <div class="left">
+            <div class="row"><span class="ic"></span><div class="body"><div class="n">Shubuh</div><div class="t">04:05</div></div></div>
+            <div class="row"><span class="ic"></span><div class="body"><div class="n">Shuruq</div><div class="t">05:23</div></div></div>
+            <div class="row"><span class="ic"></span><div class="body"><div class="n">Jumu'ah</div><div class="t">11:44</div></div></div>
+            <div class="row act"><span class="ic"></span><div class="body"><div class="n">Asr</div><div class="t">15:07</div></div></div>
+            <div class="row"><span class="ic"></span><div class="body"><div class="n">Maghrib</div><div class="t">17:57</div></div></div>
+            <div class="row"><span class="ic"></span><div class="body"><div class="n">Isha</div><div class="t">19:11</div></div></div>
+          </div>
+          <div class="right">
+            <div class="bg"></div>
+            <div class="head"><span class="mini-acc">Masjid</span> Nurul Himmah <span class="mini-lg"></span></div>
+            <div class="date">Friday 26 Nov · 21 Rabi'</div>
+            <span class="mini-chip cd">Maghrib -01:20</span>
+          </div>
+          <div class="analog-clock"><span class="dot"></span></div>
+        </div>
+      </div>
+      <div class="meta">
+        <h3>Tema 6 — Hybrid Analog</h3>
+        <div class="desc">Sidebar biru tegas + analog clock besar dengan jarum merah + foto kanan.</div>
+        <div class="tags"><span class="tag">Premium</span><span class="tag">Hybrid</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Personalisasi -->
+  <div class="settings">
+    <div class="card">
+      <h2>Personalisasi Visual</h2>
+      <div class="opt">
+        <div>
+          <div class="l">Warna Aksen</div>
+          <div class="d">Warna highlight sholat aktif</div>
+        </div>
+        <div class="swatch-row">
+          <div class="sw sel" style="background:linear-gradient(135deg,#c89a45,#f0cd86);" title="Gold"></div>
+          <div class="sw" style="background:#2563d4;" title="Blue"></div>
+          <div class="sw" style="background:#16a34a;" title="Green"></div>
+          <div class="sw" style="background:#dc2626;" title="Red"></div>
+          <div class="sw" style="background:#9333ea;" title="Purple"></div>
+        </div>
+      </div>
+      <div class="opt">
+        <div>
+          <div class="l">Foto Latar</div>
+          <div class="d">Gambar belakang display</div>
+        </div>
+        <select class="input">
+          <option>Masjid Default</option>
+          <option>Masjid Nabawi</option>
+          <option>Masjid Quba</option>
+          <option>Upload kustom...</option>
+        </select>
+      </div>
+      <div class="opt">
+        <div>
+          <div class="l">Font Jam Digital</div>
+          <div class="d">Tampilan angka jam besar</div>
+        </div>
+        <select class="input">
+          <option>Inter Bold (default)</option>
+          <option>DSEG7 (LCD)</option>
+          <option>Orbitron</option>
+        </select>
+      </div>
+      <div class="opt">
+        <div>
+          <div class="l">Kecepatan Running Text</div>
+          <div class="d">Berapa cepat teks berjalan</div>
+        </div>
+        <select class="input">
+          <option>Pelan</option>
+          <option selected>Normal</option>
+          <option>Cepat</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Mode &amp; Notifikasi</h2>
+      <div class="opt">
+        <div>
+          <div class="l">Mode Adzan Otomatis</div>
+          <div class="d">Tampilkan layar penuh saat waktu adzan</div>
+        </div>
+        <label class="toggle"><input type="checkbox" checked /><span class="slot"></span></label>
+      </div>
+      <div class="opt">
+        <div>
+          <div class="l">Mode Iqamah</div>
+          <div class="d">Countdown 10 menit setelah adzan</div>
+        </div>
+        <label class="toggle"><input type="checkbox" checked /><span class="slot"></span></label>
+      </div>
+      <div class="opt">
+        <div>
+          <div class="l">Audio Adzan</div>
+          <div class="d">Putar adzan otomatis saat masuk waktu</div>
+        </div>
+        <label class="toggle"><input type="checkbox" /><span class="slot"></span></label>
+      </div>
+      <div class="opt">
+        <div>
+          <div class="l">Tampilkan Tanggal Hijriah</div>
+          <div class="d">Kalender Hijriah di header</div>
+        </div>
+        <label class="toggle"><input type="checkbox" checked /><span class="slot"></span></label>
+      </div>
+      <div class="opt">
+        <div>
+          <div class="l">Tampilkan Logo Masjid</div>
+          <div class="d">Logo di pojok kiri atas</div>
+        </div>
+        <label class="toggle"><input type="checkbox" checked /><span class="slot"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);">Reset Default</button>
+    <button class="btn gold">Simpan &amp; Terapkan</button>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.theme').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      document.querySelectorAll('.theme').forEach(x=>x.classList.remove('selected'));
+      t.classList.add('selected');
+    });
+  });
+  document.querySelectorAll('.sw').forEach(sw=>{
+    sw.addEventListener('click', ()=>{
+      sw.parentNode.querySelectorAll('.sw').forEach(x=>x.classList.remove('sel'));
+      sw.classList.add('sel');
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<title>Digimos — Tema 5 (Pill Header)</title>
+<meta name="viewport" content="width=1920, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue-bar:#1f5dd6;
+    --blue-deep:#1748b8;
+    --blue-dark:#0a1f4d;
+    --gold-300:#f0cd86;
+    --gold-400:#e3b864;
+    --gold-500:#c89a45;
+    --yellow:#ffd93d;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{
+    width:100%; height:100%;
+    background:#000; color:#fff;
+    font-family:'Plus Jakarta Sans','Inter',system-ui,sans-serif;
+    overflow:hidden;
+  }
+  .stage{ position:fixed; inset:0; background:#000; overflow:hidden;}
+  .canvas{ position:absolute; inset:0; width:100vw; height:100vh; overflow:hidden;}
+
+  /* outer gold frame */
+  .gold-frame{
+    position:absolute; inset:0;
+    padding:.9vh;
+    background:linear-gradient(135deg,#3a2810 0%, #c89a45 14%, #f7e1a8 24%, #c89a45 36%, #6b4a1a 52%, #c89a45 68%, #f7e1a8 80%, #a37a2a 100%);
+    z-index:1;
+    pointer-events:none;
+  }
+  .gold-frame::before{
+    content:""; position:absolute; inset:.9vh;
+    background:#000;
+  }
+  .inner{ position:absolute; inset:.9vh; z-index:2; overflow:hidden;}
+
+  /* mosque photo */
+  .bg-photo{
+    position:absolute;
+    left:0; right:0; top:0; bottom:18vh;
+    background:url('assets/masjid-bg.png') center 30%/cover;
+    z-index:0;
+  }
+  .bg-photo::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(6,18,46,.15) 0%, transparent 25%, transparent 70%, rgba(6,18,46,.55) 100%);
+  }
+
+  /* ============== TOP-LEFT BLUE PILL ============== */
+  .header-pill{
+    position:absolute;
+    left:0; top:0;
+    z-index:4;
+    background:linear-gradient(180deg, #2168d6 0%, #1748b8 100%);
+    padding:1.6vh 6vw 1.6vh 2vw;
+    border-radius:0 0 6vw 0;
+    display:flex; align-items:center; gap:1.2vw;
+    box-shadow:6px 6px 24px rgba(0,0,0,.4);
+    max-width:42vw;
+  }
+  .header-pill .logo{
+    width:clamp(48px,4.4vw,90px);
+    height:clamp(48px,4.4vw,90px);
+    border-radius:50%;
+    background:linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.05));
+    border:2px solid rgba(255,255,255,.4);
+    display:grid; place-items:center;
+    flex:none;
+    color:#fff;
+  }
+  .header-pill .logo svg{ width:62%; height:62%;}
+  .header-pill .name{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:800;
+    font-size:clamp(28px,3.2vw,62px);
+    line-height:1;
+    letter-spacing:-1px;
+  }
+  .header-pill .accent{ color:var(--gold-300);}
+  .header-pill .addr{
+    margin-top:.8vh;
+    font-size:clamp(12px,1vw,20px);
+    color:rgba(255,255,255,.85);
+    letter-spacing:.3px;
+    font-weight:500;
+  }
+
+  /* ============== TOP-RIGHT DATE + COUNTDOWN ============== */
+  .top-right{
+    position:absolute;
+    right:1.6vw; top:2vh;
+    z-index:4;
+    text-align:right;
+    display:flex; flex-direction:column; align-items:flex-end;
+    gap:1vh;
+  }
+  .date-strip{
+    color:#fff;
+    font-size:clamp(15px,1.5vw,30px);
+    font-weight:700;
+    display:flex; align-items:center; gap:.6vw;
+    text-shadow:0 2px 10px rgba(0,0,0,.6);
+  }
+  .date-strip .dot{
+    width:.7vw; height:.7vw;
+    max-width:14px; max-height:14px;
+    border-radius:50%;
+    background:#7bff9c;
+    box-shadow:0 0 10px #7bff9c;
+  }
+  .date-strip .day{ font-weight:800;}
+  .date-strip .sep{ opacity:.55; padding:0 .2vw;}
+
+  .countdown{
+    background:linear-gradient(180deg,#ffffff,#e9eefb);
+    color:#0a1f4d;
+    padding:.9vh 1.4vw;
+    border-radius:999px;
+    display:flex; align-items:center; gap:.7vw;
+    box-shadow:0 10px 24px rgba(0,0,0,.45), inset 0 1px 0 #fff;
+    border:1.5px solid rgba(243,205,134,.6);
+  }
+  .countdown svg{
+    width:clamp(18px,1.6vw,32px); height:clamp(18px,1.6vw,32px);
+    color:var(--blue-deep);
+  }
+  .countdown .lbl{ font-weight:700; font-size:clamp(15px,1.4vw,28px);}
+  .countdown .val{
+    font-family:'Inter',sans-serif;
+    font-weight:800;
+    font-size:clamp(18px,1.7vw,34px);
+    color:#0a3d8f;
+    letter-spacing:-.5px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ============== ANALOG CLOCK (bottom-left overlap) ============== */
+  .clock-area{
+    position:absolute;
+    left:1.4vw; bottom:14vh;
+    z-index:5;
+  }
+  .clock{
+    width:clamp(180px, 18vw, 340px);
+    aspect-ratio:1/1;
+    border-radius:50%;
+    background:radial-gradient(circle at 50% 50%, #2c7ff0 0%, #1f5dd6 60%, #133f9c 100%);
+    border:5px solid rgba(255,255,255,.18);
+    box-shadow:0 20px 50px rgba(0,0,0,.55), 0 0 0 8px rgba(20,69,168,.4), inset 0 0 0 1px rgba(255,255,255,.2);
+    position:relative;
+  }
+  .clock svg{ width:100%; height:100%; position:relative; z-index:1;}
+  .clock-brand{
+    position:absolute;
+    left:50%; top:60%;
+    transform:translate(-50%,0);
+    text-align:center;
+    color:rgba(255,255,255,.7);
+    z-index:0;
+    pointer-events:none;
+  }
+  .clock-brand .b{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:800;
+    font-size:clamp(10px,1vw,18px);
+    letter-spacing:2.5px;
+  }
+  .clock-brand .v{
+    font-size:clamp(7px,.65vw,12px);
+    letter-spacing:1.4px;
+    color:rgba(255,255,255,.55);
+    font-weight:600;
+    margin-top:2px;
+  }
+
+  /* ============== BOTTOM BLUE BAR (6 prayers) ============== */
+  .bar{
+    position:absolute;
+    left:0; right:0; bottom:6vh;
+    height:12vh;
+    background:linear-gradient(180deg, #2168d6 0%, #1748b8 100%);
+    z-index:4;
+    display:flex; align-items:center;
+    padding:0 1.2vw 0 17vw;
+    border-top:2px solid rgba(243,205,134,.4);
+    border-bottom:2px solid rgba(243,205,134,.3);
+  }
+  .bar .c{
+    flex:1;
+    text-align:center;
+    color:#fff;
+  }
+  .bar .c .n{
+    font-size:clamp(18px, 1.8vw, 36px);
+    font-weight:700;
+    letter-spacing:.3px;
+    line-height:1;
+  }
+  .bar .c .t{
+    font-family:'Inter',sans-serif;
+    font-weight:800;
+    font-size:clamp(36px, 3.6vw, 72px);
+    line-height:1;
+    margin-top:.5vh;
+    letter-spacing:-1.5px;
+    font-variant-numeric:tabular-nums;
+  }
+  .bar .c.active .t{
+    color:var(--yellow);
+    text-shadow:0 0 18px rgba(255,217,61,.55);
+  }
+
+  /* ============== MARQUEE ============== */
+  .marquee{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:6vh;
+    background:rgba(6,18,46,.85);
+    border-top:2px solid rgba(243,205,134,.4);
+    display:flex; align-items:center;
+    overflow:hidden;
+    z-index:6;
+    backdrop-filter:blur(8px);
+  }
+  .marquee::before, .marquee::after{
+    content:""; position:absolute; top:0; bottom:0; width:60px; z-index:2; pointer-events:none;
+  }
+  .marquee::before{ left:0; background:linear-gradient(90deg,rgba(6,18,46,.95), transparent);}
+  .marquee::after{ right:0; background:linear-gradient(270deg,rgba(6,18,46,.95), transparent);}
+  .marquee .track{
+    display:flex; white-space:nowrap;
+    animation:scroll 60s linear infinite;
+    will-change:transform;
+  }
+  .marquee .item{
+    font-size:clamp(14px,1.3vw,26px);
+    font-weight:500;
+    color:#fff;
+    padding:0 3vw;
+    letter-spacing:.4px;
+    display:flex; align-items:center; gap:1.6vw;
+  }
+  .marquee .item::before{ content:"•"; color:var(--gold-300); font-size:1.4em;}
+  @keyframes scroll{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
+
+  /* ============== OVERLAYS ============== */
+  .overlay{
+    position:absolute; inset:0; z-index:100;
+    background:radial-gradient(120% 90% at 50% 30%, #1f5dd6 0%, #0e2974 55%, #06122e 100%);
+    display:none; align-items:center; justify-content:center;
+    flex-direction:column; text-align:center; overflow:hidden;
+  }
+  .overlay.show{ display:flex;}
+  .overlay::before{
+    content:""; position:absolute; inset:0;
+    background:url('assets/masjid-bg.png') center/cover;
+    opacity:.2; filter:blur(2px);
+  }
+  .overlay-inner{ position:relative; z-index:2; padding:40px;}
+  .overlay .label{ font-size:clamp(20px,2.2vw,44px); letter-spacing:8px; color:var(--gold-300); font-weight:600;}
+  .overlay .arabic{
+    font-family:'Amiri',serif; font-size:clamp(60px,8vw,160px);
+    line-height:1.2; margin:2vh 0 1vh;
+    color:#fff; text-shadow:0 4px 30px rgba(0,0,0,.7);
+  }
+  .overlay .prayer-name{
+    font-size:clamp(70px,9vw,180px); font-weight:800;
+    letter-spacing:-2px;
+    background:linear-gradient(180deg,#fff,#f0cd86 60%,#a37a2a);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .overlay .place{ margin-top:2vh; font-size:clamp(20px,2vw,40px); color:rgba(255,255,255,.85);}
+  .overlay .clock-big{
+    margin-top:3vh; font-family:'Inter',sans-serif;
+    font-weight:800; font-size:clamp(70px,8vw,160px);
+    color:#fff; font-variant-numeric:tabular-nums; letter-spacing:-4px;
+  }
+  .overlay .pulse{
+    margin-top:2vh; display:inline-flex; align-items:center; gap:14px;
+    padding:1.4vh 2.4vw;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(243,205,134,.4);
+    border-radius:999px;
+    color:#fff; font-size:clamp(15px,1.5vw,28px);
+  }
+  .pulse-dot{
+    width:14px; height:14px; border-radius:50%; background:var(--gold-300);
+    animation:pulse 1.6s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(243,205,134,.6);}
+    70%{box-shadow:0 0 0 26px rgba(243,205,134,0);}
+    100%{box-shadow:0 0 0 0 rgba(243,205,134,0);}
+  }
+  .overlay.iqamah .label{ color:#7bff9c;}
+  .overlay.iqamah .countdown-huge{
+    font-family:'Inter',sans-serif;
+    font-size:clamp(180px,22vw,480px);
+    font-weight:900; line-height:1; color:#fff;
+    letter-spacing:-12px; font-variant-numeric:tabular-nums;
+    margin-top:2vh;
+  }
+  .overlay.iqamah .countdown-huge .sep{ color:var(--gold-300);}
+  .overlay.iqamah .sub{ margin-top:3vh; font-size:clamp(22px,2.4vw,46px); color:rgba(255,255,255,.85); font-weight:500;}
+
+  .modes{
+    position:fixed; bottom:14px; right:14px; z-index:200;
+    display:flex; gap:8px;
+    background:rgba(0,0,0,.65); padding:8px;
+    border-radius:12px; border:1px solid rgba(255,255,255,.15);
+    backdrop-filter:blur(8px);
+  }
+  .modes button{
+    background:linear-gradient(180deg,#1545a8,#0a3d8f);
+    color:#fff; border:1px solid rgba(243,205,134,.3);
+    padding:8px 14px; font-size:13px; font-weight:600;
+    border-radius:8px; cursor:pointer; font-family:inherit;
+  }
+  .modes button.active{ background:linear-gradient(180deg,#e3b864,#a37a2a); color:#0a1f4d;}
+  .modes a{
+    background:rgba(255,255,255,.08); color:#fff;
+    border:1px solid rgba(255,255,255,.15);
+    padding:8px 14px; font-size:13px; font-weight:600;
+    border-radius:8px; text-decoration:none; font-family:inherit;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="canvas">
+    <div class="gold-frame"></div>
+    <div class="inner">
+
+      <div class="bg-photo"></div>
+
+      <!-- TOP-LEFT HEADER PILL -->
+      <div class="header-pill">
+        <div class="logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3l1 2-1 2-1-2 1-2Z" fill="currentColor"/>
+            <path d="M5 21V14a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v7"/>
+            <path d="M9 21v-4a3 3 0 0 1 6 0v4"/>
+            <path d="M5 21h14"/>
+          </svg>
+        </div>
+        <div>
+          <div class="name"><span class="accent">Masjid</span> Nurul Himmah</div>
+          <div class="addr">Kp. Duren Seribu, Duren Seribu, Bojongsari, Depok &nbsp;·&nbsp; Telp. 0251-8064544</div>
+        </div>
+      </div>
+
+      <!-- TOP-RIGHT DATE + COUNTDOWN -->
+      <div class="top-right">
+        <div class="date-strip">
+          <span class="dot"></span>
+          <span class="day" id="dayName">Friday</span>
+          <span id="dateMasehi">26 Nov 2021</span>
+          <span class="sep">/</span>
+          <span id="dateHijri">21 Rabi' al-Thani 1443H</span>
+        </div>
+        <div class="countdown">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span class="lbl" id="nextLbl">Maghrib</span>
+          <span class="val" id="nextVal">-01:11:58</span>
+        </div>
+      </div>
+
+      <!-- ANALOG CLOCK (bottom-left, overlapping photo + bar) -->
+      <div class="clock-area">
+        <div class="clock">
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <g id="ticks"></g>
+            <g font-family="Inter, sans-serif" font-weight="800" font-size="15" fill="#ffffff" text-anchor="middle" dominant-baseline="central">
+              <text x="100" y="22">12</text>
+              <text x="138" y="32">1</text>
+              <text x="166" y="60">2</text>
+              <text x="178" y="100">3</text>
+              <text x="166" y="140">4</text>
+              <text x="138" y="168">5</text>
+              <text x="100" y="178">6</text>
+              <text x="62" y="168">7</text>
+              <text x="34" y="140">8</text>
+              <text x="22" y="100">9</text>
+              <text x="34" y="60">10</text>
+              <text x="62" y="32">11</text>
+            </g>
+            <line id="h-hour" x1="100" y1="100" x2="100" y2="62" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+            <line id="h-min" x1="100" y1="100" x2="100" y2="35" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round"/>
+            <line id="h-sec" x1="100" y1="108" x2="100" y2="28" stroke="#ff3b3b" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="100" cy="100" r="5" fill="#0a1f4d" stroke="#fff" stroke-width="1.5"/>
+          </svg>
+          <div class="clock-brand">
+            <div class="b">MASAJID</div>
+            <div class="v">VERSION 1.0.0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM PRAYER BAR -->
+      <div class="bar">
+        <div class="c" data-prayer="shubuh">
+          <div class="n">Shubuh</div>
+          <div class="t" data-key="shubuh">04:05</div>
+        </div>
+        <div class="c" data-prayer="syuruq">
+          <div class="n">Shuruq</div>
+          <div class="t" data-key="syuruq">05:23</div>
+        </div>
+        <div class="c" data-prayer="dzuhur">
+          <div class="n">Jumu'ah</div>
+          <div class="t" data-key="dzuhur">11:44</div>
+        </div>
+        <div class="c active" data-prayer="ashar">
+          <div class="n">Asr</div>
+          <div class="t" data-key="ashar">15:07</div>
+        </div>
+        <div class="c" data-prayer="maghrib">
+          <div class="n">Maghrib</div>
+          <div class="t" data-key="maghrib">17:57</div>
+        </div>
+        <div class="c" data-prayer="isya">
+          <div class="n">Isha</div>
+          <div class="t" data-key="isya">19:11</div>
+        </div>
+      </div>
+
+      <!-- MARQUEE -->
+      <div class="marquee">
+        <div class="track" id="track">
+          <div class="item">Please follow health protocols to prevent the spread of COVID-19</div>
+          <div class="item">Turn off the phone or use silent mode while in the mosque area</div>
+          <div class="item">Welcome to Masjid Nurul Himmah</div>
+          <div class="item">Total infaq this month is Rp 75.279.000, 5 gold dinars</div>
+          <div class="item">Please follow health protocols to prevent the spread of COVID-19</div>
+          <div class="item">Turn off the phone or use silent mode while in the mosque area</div>
+          <div class="item">Welcome to Masjid Nurul Himmah</div>
+          <div class="item">Total infaq this month is Rp 75.279.000, 5 gold dinars</div>
+        </div>
+      </div>
+
+      <!-- overlays -->
+      <div class="overlay" id="adzanOverlay">
+        <div class="overlay-inner">
+          <div class="label">WAKTU SHOLAT TELAH MASUK</div>
+          <div class="arabic">حَيَّ عَلَى الصَّلَاة</div>
+          <div class="prayer-name" id="adzanName">ASR</div>
+          <div class="place">Masjid Nurul Himmah</div>
+          <div class="clock-big" id="adzanClock">15:07:00</div>
+          <div class="pulse"><span class="pulse-dot"></span><span>Hentikan aktivitas dan segera tunaikan sholat</span></div>
+        </div>
+      </div>
+      <div class="overlay iqamah" id="iqamahOverlay">
+        <div class="overlay-inner">
+          <div class="label">IQAMAH DALAM</div>
+          <div class="countdown-huge"><span id="iqM">09</span><span class="sep">:</span><span id="iqS">42</span></div>
+          <div class="sub">Persiapkan diri untuk sholat <b id="iqName">Asr</b> berjamaah</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modes">
+  <button class="active" data-mode="normal">Normal</button>
+  <button data-mode="adzan">Adzan Mode</button>
+  <button data-mode="iqamah">Iqamah Mode</button>
+  <a href="index.html">← Index</a>
+</div>
+
+<script>
+  // analog tick marks
+  (function(){
+    const ticks = document.getElementById('ticks');
+    if (!ticks) return;
+    for (let i = 0; i < 60; i++){
+      const angle = (i * 6) * Math.PI / 180;
+      const isHour = i % 5 === 0;
+      const r1 = isHour ? 80 : 87;
+      const r2 = 92;
+      const x1 = 100 + Math.sin(angle) * r1;
+      const y1 = 100 - Math.cos(angle) * r1;
+      const x2 = 100 + Math.sin(angle) * r2;
+      const y2 = 100 - Math.cos(angle) * r2;
+      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',x1); line.setAttribute('y1',y1);
+      line.setAttribute('x2',x2); line.setAttribute('y2',y2);
+      line.setAttribute('stroke', '#ffffff');
+      line.setAttribute('stroke-width', isHour ? '3' : '1');
+      line.setAttribute('stroke-linecap', 'round');
+      line.setAttribute('opacity', isHour ? '1' : '.55');
+      ticks.appendChild(line);
+    }
+  })();
+
+  function pad(n){ return String(n).padStart(2,'0');}
+  const DAY_EN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MON_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const SCHEDULE = [
+    { key:'shubuh',  name:'Shubuh',  time:'04:05' },
+    { key:'syuruq',  name:'Shuruq',  time:'05:23' },
+    { key:'dzuhur',  name:'Jumu\'ah',time:'11:44' },
+    { key:'ashar',   name:'Asr',     time:'15:07' },
+    { key:'maghrib', name:'Maghrib', time:'17:57' },
+    { key:'isya',    name:'Isha',    time:'19:11' },
+  ];
+
+  function tick(){
+    const d = new Date();
+    const sec = d.getSeconds() + d.getMilliseconds()/1000;
+    const min = d.getMinutes() + sec/60;
+    const hr  = (d.getHours() % 12) + min/60;
+    const hH = document.getElementById('h-hour');
+    const hM = document.getElementById('h-min');
+    const hS = document.getElementById('h-sec');
+    if (hH) hH.setAttribute('transform', `rotate(${hr*30} 100 100)`);
+    if (hM) hM.setAttribute('transform', `rotate(${min*6} 100 100)`);
+    if (hS) hS.setAttribute('transform', `rotate(${sec*6} 100 100)`);
+
+    document.getElementById('dayName').textContent = DAY_EN[d.getDay()];
+    document.getElementById('dateMasehi').textContent =
+      d.getDate() + ' ' + MON_EN[d.getMonth()] + ' ' + d.getFullYear();
+
+    const ac = document.getElementById('adzanClock');
+    if (ac) ac.textContent = pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+
+    updateNext();
+  }
+
+  function updateNext(){
+    const d = new Date();
+    const now = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
+    let next = null, nextSecs = Infinity;
+    for (const p of SCHEDULE){
+      if (p.key === 'syuruq') continue;
+      const [h,m] = p.time.split(':').map(Number);
+      let s = h*3600 + m*60;
+      if (s <= now) s += 24*3600;
+      const diff = s - now;
+      if (diff < nextSecs){ nextSecs = diff; next = p; }
+    }
+    if (!next) return;
+    document.querySelectorAll('.bar .c').forEach(el=>{
+      el.classList.toggle('active', el.dataset.prayer === next.key);
+    });
+    const hh = Math.floor(nextSecs/3600);
+    const mm = Math.floor((nextSecs%3600)/60);
+    const ss = nextSecs%60;
+    document.getElementById('nextLbl').textContent = next.name;
+    document.getElementById('nextVal').textContent = '-' + pad(hh)+':'+pad(mm)+':'+pad(ss);
+  }
+  tick(); setInterval(tick, 1000);
+
+  const adzanOv  = document.getElementById('adzanOverlay');
+  const iqamahOv = document.getElementById('iqamahOverlay');
+  document.querySelectorAll('.modes button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.modes button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const mode = btn.dataset.mode;
+      adzanOv.classList.toggle('show',  mode === 'adzan');
+      iqamahOv.classList.toggle('show', mode === 'iqamah');
+    });
+  });
+  (function(){
+    let total = 9*60+42;
+    setInterval(()=>{
+      if (!iqamahOv.classList.contains('show')) return;
+      if (total <= 0) total = 10*60;
+      total -= 1;
+      document.getElementById('iqM').textContent = pad(Math.floor(total/60));
+      document.getElementById('iqS').textContent = pad(total%60);
+    },1000);
+  })();
+</script>
+</body>
+</html>
