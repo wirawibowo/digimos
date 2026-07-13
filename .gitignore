@@ -17,6 +17,11 @@ uploads/
 .DS_Store
 Thumbs.db
 
+# Local dev
+mockup/
+implementation_plan.md
+FORK_REPORT.md
+
 # Env
 .env
 .env.*

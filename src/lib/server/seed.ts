@@ -19,8 +19,8 @@ async function seed() {
 	const masjid = db
 		.insert(masjids)
 		.values({
-			name: 'Masjid Nurul Himmah',
-			address: 'Depok, Jawa Barat',
+			name: 'Masjid Al-Fahrudin',
+			address: 'Jakarta, Indonesia',
 			phone: '-',
 			cityApiId: '0314',
 			cityName: 'Depok',
@@ -78,7 +78,7 @@ async function seed() {
 	await db.insert(announcements).values([
 		{
 			masjidId: masjid.id,
-			text: 'Selamat datang di Masjid Nurul Himmah',
+			text: 'Selamat datang di Masjid Al-Fahrudin',
 			active: 1,
 			sortOrder: 0,
 			createdAt: now,
