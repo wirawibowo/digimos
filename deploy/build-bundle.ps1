@@ -75,7 +75,7 @@ if (Test-Path $OutputFile) {
 
 Push-Location $ProjectRoot
 try {
-    tar -czf $OutputFile -C $ProjectRoot "digimos-bundle"
+    & tar -czf "digimos-bundle.tar.gz" "digimos-bundle"
     if ($LASTEXITCODE -ne 0) { throw "tar failed" }
     Write-Host "  Archive created" -ForegroundColor Green
 } finally {
