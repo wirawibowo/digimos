@@ -95,5 +95,46 @@ export const actions: Actions = {
 			console.error('deleteUser error:', err);
 			return fail(500, { error: 'Terjadi kesalahan server' });
 		}
+	},
+
+	updateUser: async ({ request, cookies }) => {
+		const currentUser = await validateSession(cookies);
+		if (!currentUser || currentUser.role !== 'superadmin') throw error(403, 'Akses ditolak');
+
+		const data = await request.formData();
+		const id = Number(data.get('id'));
+		const name = (data.get('name') as string ?? '').trim();
+		const role = (data.get('role') as string ?? '').trim();
+		const masjidIdStr = data.get('masjidId') as string;
+		const password = (data.get('password') as string ?? '').trim();
+
+		if (!id || !name || !role) {
+			return fail(400, { updateError: 'ID, nama, dan peran wajib diisi' });
+		}
+
+		if (!VALID_ROLES.includes(role as typeof VALID_ROLES[number])) {
+			return fail(400, { updateError: 'Role tidak valid' });
+		}
+
+		if (password && password.length < MIN_PASSWORD_LENGTH) {
+			return fail(400, { updateError: `Password minimal ${MIN_PASSWORD_LENGTH} karakter` });
+		}
+
+		try {
+			const masjidId = masjidIdStr ? Number(masjidIdStr) : null;
+			const now = new Date().toISOString();
+
+			if (password) {
+				const passwordHash = await bcrypt.hash(password, 10);
+				db.update(users).set({ name, role, masjidId, password: passwordHash, updatedAt: now }).where(eq(users.id, id)).run();
+			} else {
+				db.update(users).set({ name, role, masjidId, updatedAt: now }).where(eq(users.id, id)).run();
+			}
+
+			return { updateSuccess: true };
+		} catch (err: unknown) {
+			console.error('updateUser error:', err);
+			return fail(500, { updateError: 'Terjadi kesalahan server' });
+		}
 	}
 };

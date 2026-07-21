@@ -5,11 +5,25 @@
 	const userList = $derived(page.data.users);
 	const masjidList = $derived(page.data.masjids);
 	const error = $derived(page.form?.error);
+	const updateError = $derived(page.form?.updateError);
 
 	let showAddForm = $state(false);
+	let editingUser = $state<(typeof userList)[number] | null>(null);
+
+	$effect(() => {
+		if (page.form?.updateSuccess) editingUser = null;
+	});
 
 	function initial(name: string) {
 		return name?.charAt(0).toUpperCase() ?? '?';
+	}
+
+	function openEdit(u: (typeof userList)[number]) {
+		editingUser = u;
+	}
+
+	function closeEdit() {
+		editingUser = null;
 	}
 </script>
 
@@ -113,18 +127,19 @@
 						<td><span class="role-badge {u.role}">{u.role === 'superadmin' ? 'Superadmin' : 'Admin'}</span></td>
 						<td>{u.masjidName ?? '—'}</td>
 						<td>
-							{#if u.username !== 'admin'}
-								<form method="POST" action="?/deleteUser" use:enhance>
-									<input type="hidden" name="id" value={u.id} />
-									<button
-										class="btn danger small"
-										type="submit"
-										onclick={(e) => !confirm(`Hapus pengguna ${u.name}?`) && e.preventDefault()}
-									>Hapus</button>
-								</form>
-							{:else}
-								<span style="font-size:12px; color: var(--muted);">—</span>
-							{/if}
+							<div class="action-cell">
+								<button class="btn ghost small" onclick={() => openEdit(u)}>Edit</button>
+								{#if u.username !== 'admin'}
+									<form method="POST" action="?/deleteUser" use:enhance>
+										<input type="hidden" name="id" value={u.id} />
+										<button
+											class="btn danger small"
+											type="submit"
+											onclick={(e) => !confirm(`Hapus pengguna ${u.name}?`) && e.preventDefault()}
+										>Hapus</button>
+									</form>
+								{/if}
+							</div>
 						</td>
 					</tr>
 				{:else}
@@ -134,6 +149,63 @@
 		</table>
 	</article>
 </section>
+
+{#if editingUser}
+	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+	<div class="modal-backdrop" onclick={closeEdit} role="presentation">
+		<!-- svelte-ignore a11y_interactive_supports_focus -->
+		<div class="modal-box" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="edit-user-title" tabindex="-1">
+			<div class="modal-header">
+				<h3 id="edit-user-title">Edit Pengguna</h3>
+				<button class="close-btn" onclick={closeEdit} aria-label="Tutup">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+				</button>
+			</div>
+
+			<form method="POST" action="?/updateUser" use:enhance>
+				<input type="hidden" name="id" value={editingUser.id} />
+				<div class="field">
+					<label for="edit-name">Nama Lengkap</label>
+					<input id="edit-name" class="input" name="name" required value={editingUser.name} />
+				</div>
+				<div class="field">
+					<label for="edit-username">Username</label>
+					<input id="edit-username" class="input" value={editingUser.username} disabled />
+					<p class="hint">Username tidak dapat diubah.</p>
+				</div>
+				<div class="split">
+					<div class="field">
+						<label for="edit-role">Peran (Role)</label>
+						<select id="edit-role" name="role" required>
+							<option value="admin" selected={editingUser.role === 'admin'}>Admin Masjid</option>
+							<option value="superadmin" selected={editingUser.role === 'superadmin'}>Superadmin</option>
+						</select>
+					</div>
+					<div class="field">
+						<label for="edit-masjid">Akses Masjid</label>
+						<select id="edit-masjid" name="masjidId">
+							<option value="" selected={!editingUser.masjidId}>Semua Masjid</option>
+							{#each masjidList as m}
+								<option value={m.id} selected={editingUser.masjidId === m.id}>{m.name}</option>
+							{/each}
+						</select>
+					</div>
+				</div>
+				<div class="field">
+					<label for="edit-password">Password Baru <span class="optional">(kosongkan jika tidak ingin mengubah)</span></label>
+					<input id="edit-password" class="input" type="password" name="password" placeholder="Min. 8 karakter" />
+				</div>
+				{#if updateError}
+					<p class="error">{updateError}</p>
+				{/if}
+				<div class="modal-footer">
+					<button type="button" class="btn ghost" onclick={closeEdit}>Batal</button>
+					<button type="submit" class="btn gold">Simpan Perubahan</button>
+				</div>
+			</form>
+		</div>
+	</div>
+{/if}
 
 <style>
 	.users-page {
@@ -273,5 +345,77 @@
 		text-align: center;
 		color: var(--muted);
 		padding: 40px !important;
+	}
+
+	.action-cell {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+
+	/* Modal */
+	.modal-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.6);
+		backdrop-filter: blur(4px);
+		z-index: 100;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 16px;
+	}
+
+	.modal-box {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		width: 100%;
+		max-width: 480px;
+		padding: 24px;
+		box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+	}
+
+	.modal-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 20px;
+	}
+
+	.modal-header h3 {
+		font-size: 18px;
+		font-weight: 700;
+	}
+
+	.close-btn {
+		background: none;
+		border: none;
+		color: var(--muted);
+		cursor: pointer;
+		padding: 4px;
+		display: grid;
+		place-items: center;
+		border-radius: 6px;
+		transition: color 0.15s, background 0.15s;
+	}
+
+	.close-btn:hover {
+		color: var(--text);
+		background: rgba(255, 255, 255, 0.06);
+	}
+
+	.modal-footer {
+		display: flex;
+		justify-content: flex-end;
+		gap: 10px;
+		margin-top: 20px;
+	}
+
+	.optional {
+		font-size: 11px;
+		font-weight: 400;
+		color: var(--muted);
 	}
 </style>
